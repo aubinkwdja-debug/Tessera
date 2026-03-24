@@ -48,9 +48,20 @@ import { t, type Language } from './i18n';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { TesseraPage } from './components/TesseraPage';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-
 // --- Components ---
+
+let aiClient: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!aiClient) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('VITE_GEMINI_API_KEY environment variable is required');
+    }
+    aiClient = new GoogleGenAI({ apiKey });
+  }
+  return aiClient;
+}
 
 const Header = ({ onOpenMenu, isDarkMode, isMarianMode, language }: { onOpenMenu: () => void; isDarkMode: boolean; isMarianMode: boolean; language: Language }) => {
   const location = useLocation();
@@ -734,7 +745,7 @@ const PrayerDetailPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; i
     setIsGenerating(true);
     const voice = localStorage.getItem('voice') || 'Zephyr';
     try {
-      const response = await ai.models.generateContent({
+      const response = await getAiClient().models.generateContent({
         model: "gemini-2.5-flash-preview-tts",
         contents: [{ parts: [{ text: prayer.content }] }],
         config: {
@@ -1147,7 +1158,7 @@ const SettingsPage = ({
     setSelectedVoice(voice);
 
     try {
-      const response = await ai.models.generateContent({
+      const response = await getAiClient().models.generateContent({
         model: "gemini-2.5-flash-preview-tts",
         contents: [{ parts: [{ text: t[language].voicePreview }] }],
         config: {
