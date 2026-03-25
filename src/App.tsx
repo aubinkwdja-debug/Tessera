@@ -1644,7 +1644,7 @@ const AboutPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarian
 
         <section className={cn("p-10 rounded-[3rem] shadow-2xl space-y-4 text-center relative overflow-hidden", isDarkMode ? (isMarianMode ? "bg-blue-800 shadow-blue-900/50" : "bg-blue-900 shadow-blue-900/50") : (isMarianMode ? "bg-blue-600 shadow-blue-600/30" : "bg-[#1a237e] shadow-blue-900/30"))}>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16" />
-          <h3 className={cn("font-sans font-bold text-lg relative z-10", isMarianMode ? "text-blue-100" : "text-amber-400")}>À Jésus par Marie</h3>
+          <h3 className={cn("font-serif italic font-bold text-3xl relative z-10", isMarianMode ? "text-blue-100" : "text-amber-400")}>À Jésus par Marie</h3>
           <p className={cn("text-[10px] font-black uppercase tracking-[0.3em] relative z-10 opacity-80", isMarianMode ? "text-blue-200" : "text-blue-100")}>Pour la Gloire de Dieu</p>
         </section>
       </div>
