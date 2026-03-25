@@ -24,6 +24,24 @@ export interface RosaryCategory {
 
 export const PRAYERS: Prayer[] = [
   {
+    id: 'credo-nicee',
+    title: 'Nouvelle version de Credo (Symbole de Nicée-Constantinople)',
+    category: 'credo',
+    content: "Je crois en un seul Dieu, le Père tout-puissant, créateur du ciel et de la terre, de l'univers visible et invisible. Je crois en un seul Seigneur, Jésus Christ, le Fils unique de Dieu, né du Père avant tous les siècles : Il est Dieu, né de Dieu, lumière, née de la lumière, vrai Dieu, né du vrai Dieu. Engendré, non pas créé, de même nature que le Père ; et par lui tout a été fait. Pour nous les hommes, et pour notre salut, il descendit du ciel ; par l'Esprit Saint, il a pris chair de la Vierge Marie, et s'est fait homme. Crucifié pour nous sous Ponce Pilate, il souffrit sa passion et fut mis au tombau. Il ressuscita le troisième jour, conformément aux Écritures, et il monta au ciel ; il est assis à la droite du Père. Il reviendra dans la gloire, pour juger les vivants et les morts ; et son règne n'aura pas de fin. Je crois en l'Esprit Saint, qui est Seigneur et qui donne la vie ; il procède du Père et du Fils. Avec le Père et le Fils, il reçoit même adoration et même gloire ; il a parlé par les prophètes. Je crois en l'Église, une, sainte, catholique et apostolique. Je reconnais un seul baptême pour le pardon des péchés. J'attends la résurrection des morts, et la vie du monde à venir. Amen."
+  },
+  {
+    id: 'litanie-saints',
+    title: 'Litanie des Saints',
+    category: 'credo',
+    content: "Seigneur, aie pitié de nous.\nJésus-Christ, aie pitié de nous.\nSeigneur, aie pitié de nous.\nJésus-Christ, écoute-nous.\nJésus-Christ, exauce-nous.\nPère du ciel, qui es Dieu, aie pitié de nous.\nFils, Rédempteur du monde, qui es Dieu, aie pitié de nous.\nEsprit Saint, qui es Dieu, aie pitié de nous.\nSainte Trinité, qui es un seul Dieu, aie pitié de nous.\nSainte Marie, priez pour nous.\nSainte Mère de Dieu, priez pour nous.\nSainte Vierge des vierges, priez pour nous.\nSaint Michel, Saint Gabriel, Saint Raphaël, priez pour nous.\nTous les saints Anges et Archanges, priez pour nous.\nSaint Jean-Baptiste, priez pour nous.\nSaint Joseph, priez pour nous.\nTous les saints Patriarches et Prophètes, priez pour nous.\nSaint Pierre et Saint Paul, priez pour nous.\nTous les saints Apôtres et Évangélistes, priez pour nous.\nTous les saints Disciples du Seigneur, priez pour nous.\nSaint Étienne, priez pour nous.\nSaint Laurent, priez pour nous.\nSaint Vincent, priez pour nous.\nTous les saints Martyrs, priez pour nous.\nSaint Grégoire, Saint Augustin, Saint Jérôme, Saint Ambroise, priez pour nous.\nTous les saints Évêques et Confesseurs, priez pour nous.\nTous les saints Docteurs, priez pour nous.\nSaint Antoine, Saint Benoît, Saint Bernard, Saint Dominique, Saint François, priez pour nous.\nTous les saints Prêtres et Lévites, priez pour nous.\nTous les saints Moines et Ermites, priez pour nous.\nSainte Marie-Madeleine, Sainte Agathe, Sainte Lucie, Sainte Agnès, Sainte Cécile, Sainte Catherine, Sainte Anastasie, priez pour nous.\nToutes les saintes Vierges et Veuves, priez pour nous.\nTous les Saints et Saintes de Dieu, priez pour nous.\nSoyez-nous propice, pardonnez-nous, Seigneur.\nSoyez-nous propice, exaucez-nous, Seigneur.\nDe tout mal, délivrez-nous, Seigneur.\nDe tout péché, délivrez-nous, Seigneur.\nDe votre colère, délivrez-nous, Seigneur.\nD'une mort subite et imprévue, délivrez-nous, Seigneur.\nDes embûches du démon, délivrez-nous, Seigneur.\nDe la colère, de la haine et de toute mauvaise volonté, délivrez-nous, Seigneur.\nDe l'esprit de fornication, délivrez-nous, Seigneur.\nDe la foudre et de la tempête, délivrez-nous, Seigneur.\nDu fléau des tremblements de terre, délivrez-nous, Seigneur.\nDe la peste, de la famine et de la guerre, délivrez-nous, Seigneur.\nDe la mort éternelle, délivrez-nous, Seigneur.\nPar le mystère de votre sainte incarnation, délivrez-nous, Seigneur.\nPar votre avènement, délivrez-nous, Seigneur.\nPar votre nativité, délivrez-nous, Seigneur.\nPar votre baptême et votre saint jeûne, délivrez-nous, Seigneur.\nPar votre croix et votre passion, délivrez-nous, Seigneur.\nPar votre mort et votre sépulture, délivrez-nous, Seigneur.\nPar votre sainte résurrection, délivrez-nous, Seigneur.\nPar votre admirable ascension, délivrez-nous, Seigneur.\nPar la venue du Saint-Esprit Consolateur, délivrez-nous, Seigneur.\nAu jour du jugement, délivrez-nous, Seigneur.\nPécheurs, nous vous en prions, écoutez-nous.\nDaignez nous pardonner, nous vous en prions, écoutez-nous.\nDaignez nous conduire à une véritable pénitence, nous vous en prions, écoutez-nous.\nDaignez gouverner et conserver votre sainte Église, nous vous en prions, écoutez-nous.\nDaignez maintenir dans votre sainte religion le Souverain Pontife et tous les ordres de la hiérarchie ecclésiastique, nous vous en prions, écoutez-nous.\nDaignez humilier les ennemis de la sainte Église, nous vous en prions, écoutez-nous.\nDaignez accorder aux rois et aux princes chrétiens la paix et une véritable concorde, nous vous en prions, écoutez-nous.\nDaignez accorder à tout le peuple chrétien la paix et l'unité, nous vous en prions, écoutez-nous.\nDaignez rappeler à l'unité de l'Église tous ceux qui sont dans l'erreur, et conduire à la lumière de l'Évangile tous les infidèles, nous vous en prions, écoutez-nous.\nDaignez nous fortifier et nous conserver dans votre saint service, nous vous en prions, écoutez-nous.\nDaignez élever nos esprits aux désirs des choses célestes, nous vous en prions, écoutez-nous.\nDaignez rendre à tous nos bienfaiteurs la récompense des biens éternels, nous vous en prions, écoutez-nous.\nDaignez délivrer de la damnation éternelle nos âmes, celles de nos frères, de nos parents et de nos bienfaiteurs, nous vous en prions, écoutez-nous.\nDaignez donner et conserver les fruits de la terre, nous vous en prions, écoutez-nous.\nDaignez accorder à tous les fidèles trépassés le repos éternel, nous vous en prions, écoutez-nous.\nDaignez nous exaucer, Fils de Dieu, nous vous en prions, écoutez-nous.\nAgneau de Dieu, qui effacez les péchés du monde, pardonnez-nous, Seigneur.\nAgneau de Dieu, qui effacez les péchés du monde, exaucez-nous, Seigneur.\nAgneau de Dieu, qui effacez les péchés du monde, aie pitié de nous.\nChrist, écoute-nous.\nChrist, exauce-nous.\nSeigneur, aie pitié de nous.\nChrist, aie pitié de nous.\nSeigneur, aie pitié de nous."
+  },
+  {
+    id: 'litanie-vierge',
+    title: 'Litanie de la Vierge Marie (Litanies de Lorette)',
+    category: 'credo',
+    content: "Seigneur, aie pitié de nous.\nJésus-Christ, aie pitié de nous.\nSeigneur, aie pitié de nous.\nJésus-Christ, écoute-nous.\nJésus-Christ, exauce-nous.\nPère du ciel, qui es Dieu, aie pitié de nous.\nFils, Rédempteur du monde, qui es Dieu, aie pitié de nous.\nEsprit Saint, qui es Dieu, aie pitié de nous.\nSainte Trinité, qui es un seul Dieu, aie pitié de nous.\nSainte Marie, priez pour nous.\nSainte Mère de Dieu, priez pour nous.\nSainte Vierge des vierges, priez pour nous.\nMère du Christ, priez pour nous.\nMère de l'Église, priez pour nous.\nMère de la miséricorde, priez pour nous.\nMère de la divine grâce, priez pour nous.\nMère de l'espérance, priez pour nous.\nMère très pure, priez pour nous.\nMère très chaste, priez pour nous.\nMère toujours vierge, priez pour nous.\nMère sans tache, priez pour nous.\nMère aimable, priez pour nous.\nMère admirable, priez pour nous.\nMère du bon conseil, priez pour nous.\nMère du Créateur, priez pour nous.\nMère du Sauveur, priez pour nous.\nVierge très prudente, priez pour nous.\nVierge vénérable, priez pour nous.\nVierge digne de louange, priez pour nous.\nVierge puissante, priez pour nous.\nVierge clémente, priez pour nous.\nVierge fidèle, priez pour nous.\nMiroir de justice, priez pour nous.\nSiège de la sagesse, priez pour nous.\nCause de notre joie, priez pour nous.\nVase spirituel, priez pour nous.\nVase d'honneur, priez pour nous.\nVase insigne de dévotion, priez pour nous.\nRose mystique, priez pour nous.\nTour de David, priez pour nous.\nTour d'ivoire, priez pour nous.\nMaison d'or, priez pour nous.\nArche d'alliance, priez pour nous.\nPorte du ciel, priez pour nous.\nÉtoile du matin, priez pour nous.\nSalut des infirmes, priez pour nous.\nRefuge des pécheurs, priez pour nous.\nConsolatrice des affligés, priez pour nous.\nSecours des chrétiens, priez pour nous.\nReine des Anges, priez pour nous.\nReine des Patriarches, priez pour nous.\nReine des Prophètes, priez pour nous.\nReine des Apôtres, priez pour nous.\nReine des Martyrs, priez pour nous.\nReine des Confesseurs, priez pour nous.\nReine des Vierges, priez pour nous.\nReine de tous les Saints, priez pour nous.\nReine conçue sans le péché originel, priez pour nous.\nReine élevée aux cieux, priez pour nous.\nReine du très saint Rosaire, priez pour nous.\nReine de la famille, priez pour nous.\nReine de la paix, priez pour nous.\nAgneau de Dieu, qui effacez les péchés du monde, pardonnez-nous, Seigneur.\nAgneau de Dieu, qui effacez les péchés du monde, exaucez-nous, Seigneur.\nAgneau de Dieu, qui effacez les péchés du monde, aie pitié de nous.\nV. Priez pour nous, sainte Mère de Dieu.\nR. Afin que nous devenions dignes des promesses de Jésus-Christ.\nPrions : Seigneur, daigne répandre ta grâce en nos cœurs ; par le message de l'Ange, tu nous as fait connaître l'incarnation de ton Fils bien-aimé, conduis-nous, par sa passion et par sa croix, jusqu'à la gloire de la résurrection. Par le même Jésus, le Christ, notre Seigneur. Amen."
+  },
+  {
     id: 'notre-pere',
     title: 'Notre Père',
     category: 'credo',
@@ -154,45 +172,45 @@ export const PRAYERS: Prayer[] = [
     id: 'magnificat',
     title: "Magnificat",
     category: 'autre',
-    content: "Mon âme exalte le Seigneur, exulte mon esprit en Dieu, mon Sauveur !\nIl s'est penché sur son humble servante ; désormais tous les âges me diront bienheureuse.\nLe Puissant fit pour moi des merveilles ; Saint est son nom !\nSa miséricorde s'étend d'âge en âge sur ceux qui le craignent.\nDéployant la force de son bras, il disperse les superbes.\nIl renverse les puissants de leurs trônes, il élève les humbles.\nIl comble de biens les affamés, renvoie les riches les mains vides.\nIl relève Israël son serviteur, il se souvient de son amour,\nde la promesse faite à nos pères, en faveur d'Abraham et de sa race, à jamais."
-  }
+    content: "Mon âme exalte le Seigneur, exulte mon esprit en Dieu, mon Sauveur !\nIl s'est penché sur son humble servante ; désormais tous les âges me diront bienheureuse.\nLe Puissant fit pour moi des merveilles ; Saint est son nom !\nSa miséricorde s'étend d'âge en âge sur ceux qui le craignent.\nDéployant la force de son bras, il disperse les superbes.\nIl renverse les puissants de leurs trônes, il élève les humbles.\nIl comble de biens les affamés, renvoie les riches les mains vides.\nIl relève Israël son serviteur, il se souvient de son amour,\nde la promesse faite à nos pères, en faveur d'Abraham et de sa race, à jamais.\n\nGloire au Père, et au Fils, et au Saint-Esprit. Comme il était au commencement, maintenant et toujours, et dans les siècles des siècles. Amen."
+  },
 ];
 
 export const ROSARY: RosaryCategory[] = [
   {
     id: 'joyeux',
     title: 'Mystères Joyeux',
-    description: "Ces mystères nous font méditer sur l'enfance de Jésus et la joie de l'Incarnation, nous invitant à accueillir Dieu dans notre quotidien.",
+    description: "Ces mystères nous font méditer sur l'enfance de Jésus et la joie de l'Incarnation, nous invitant à accueillir Dieu dans notre quotidien avec un cœur pur et ouvert.",
     days: ['Lundi', 'Samedi'],
     mysteries: [
       { 
         title: "L'Annonciation", 
-        description: "L'archange Gabriel est envoyé par Dieu à Nazareth pour annoncer à Marie qu'elle a été choisie pour être la Mère du Sauveur. Marie, dans un acte de foi parfaite, répond : 'Voici la servante du Seigneur ; qu'il me soit fait selon ta parole'.", 
-        fruit: "L'humilité profonde et l'obéissance totale à la volonté de Dieu.",
+        description: "L'archange Gabriel est envoyé par Dieu à Nazareth pour annoncer à une humble vierge, Marie, qu'elle a été choisie pour être la Mère du Sauveur. C'est le moment sacré où le Ciel touche la Terre. Marie, dans un acte de foi parfaite et d'abandon total, répond : 'Voici la servante du Seigneur ; qu'il me soit fait selon ta parole'. Par son 'Fiat', elle permet au Verbe de se faire chair pour notre salut.", 
+        fruit: "L'humilité profonde, la pureté d'intention et l'obéissance joyeuse à la volonté de Dieu, même quand elle dépasse notre entendement.",
         scripture: "« L'ange entra chez elle et dit : 'Réjouis-toi, comblée de grâce, le Seigneur est avec toi.' » (Lc 1, 28)"
       },
       { 
         title: "La Visitation", 
-        description: "Apprenant que sa cousine Élisabeth attend un enfant dans sa vieillesse, Marie se hâte vers les montagnes de Judée pour l'aider. À son arrivée, Jean-Baptiste tressaille d'allégresse dans le sein de sa mère, et Marie entonne le Magnificat.", 
-        fruit: "La charité fraternelle active et l'empressement à servir le prochain.",
+        description: "Apprenant que sa cousine Élisabeth attend un enfant dans sa vieillesse, Marie, portant déjà Jésus en elle, se hâte vers les montagnes de Judée. Ce n'est pas seulement une visite de courtoisie, mais le premier acte missionnaire : Marie apporte le Christ à sa famille. À son arrivée, Jean-Baptiste tressaille d'allégresse dans le sein de sa mère, et Marie entonne le Magnificat, chantant les merveilles de Dieu.", 
+        fruit: "La charité fraternelle active, la délicatesse envers le prochain et la joie de partager la présence de Dieu avec les autres.",
         scripture: "« Élisabeth fut remplie d'Esprit Saint, et s'écria : 'Tu es bénie entre toutes les femmes !' » (Lc 1, 41-42)"
       },
       { 
         title: "La Nativité", 
-        description: "Jésus, le Verbe fait chair, naît dans le dénuement d'une étable à Bethléem. Marie le dépose dans une crèche. Les anges annoncent la paix aux hommes de bonne volonté, tandis que bergers et mages viennent adorer le Roi des Rois.", 
-        fruit: "L'esprit de pauvreté évangélique et le détachement des richesses matérielles.",
+        description: "Jésus, le Roi de l'Univers, naît dans le dénuement le plus total d'une étable à Bethléem. Marie le dépose avec tendresse dans une crèche. Ce mystère nous révèle que Dieu se fait petit pour nous rejoindre dans notre pauvreté. Les anges annoncent la paix, tandis que les bergers, les plus humbles de la société, sont les premiers témoins de la Lumière qui vient éclairer tout homme.", 
+        fruit: "L'esprit de pauvreté évangélique, le détachement des honneurs du monde et l'adoration silencieuse du mystère de Dieu fait homme.",
         scripture: "« Elle mit au monde son fils premier-né ; elle l'emmaillota et le coucha dans une crèche. » (Lc 2, 7)"
       },
       { 
         title: "La Présentation", 
-        description: "Quarante jours après la naissance, Marie et Joseph présentent l'Enfant Jésus au Temple pour accomplir la Loi. Le vieillard Siméon le prend dans ses bras et le proclame 'Lumière pour éclairer les nations'.", 
-        fruit: "La pureté du cœur et l'esprit d'obéissance aux préceptes de l'Église.",
+        description: "Quarante jours après la naissance, Marie et Joseph présentent l'Enfant Jésus au Temple pour accomplir la Loi. Le vieillard Siméon, guidé par l'Esprit, reconnaît en cet enfant le Salut du monde. Il prophétise aussi la douleur de Marie : 'Un glaive te transpercera l'âme'. Marie offre son fils au Père, acceptant déjà le sacrifice futur pour la rédemption de l'humanité.", 
+        fruit: "La pureté du cœur, l'esprit d'obéissance aux préceptes de l'Église et l'offrande de soi-même à Dieu à travers nos devoirs quotidiens.",
         scripture: "« Mes yeux ont vu le salut que tu préparais à la face des peuples. » (Lc 2, 30-31)"
       },
       { 
         title: "Le Recouvrement", 
-        description: "Après trois jours de recherche angoissée à Jérusalem, Marie et Joseph retrouvent Jésus, âgé de douze ans, au milieu des docteurs de la Loi. Il leur rappelle qu'il doit être aux affaires de son Père céleste.", 
-        fruit: "La recherche constante de Dieu et la persévérance dans la vie spirituelle.",
+        description: "Après trois jours de recherche angoissée à Jérusalem, Marie et Joseph retrouvent Jésus, âgé de douze ans, au milieu des docteurs de la Loi. Il les écoutait et les interrogeait, manifestant une sagesse divine. À Marie qui lui exprime son inquiétude, il répond : 'Ne saviez-vous pas que j'ai à être chez mon Père ?'. Ce mystère nous enseigne que la volonté de Dieu prime sur tout lien humain.", 
+        fruit: "La recherche constante de Dieu dans nos vies, la persévérance dans la prière malgré les sécheresses et la docilité à la volonté divine.",
         scripture: "« Ne saviez-vous pas que j'ai à être chez mon Père ? » (Lc 2, 49)"
       }
     ]
@@ -200,37 +218,37 @@ export const ROSARY: RosaryCategory[] = [
   {
     id: 'lumineux',
     title: 'Mystères Lumineux',
-    description: "Ces mystères nous font méditer sur la vie publique de Jésus, révélant sa divinité et sa mission de salut pour l'humanité.",
+    description: "Ces mystères nous font méditer sur la vie publique de Jésus, révélant sa divinité et sa mission de salut comme Lumière du monde.",
     days: ['Jeudi'],
     mysteries: [
       { 
         title: "Le Baptême de Jésus", 
-        description: "Jésus descend dans les eaux du Jourdain pour être baptisé par Jean. Les cieux s'ouvrent, l'Esprit descend comme une colombe et la voix du Père proclame : 'Celui-ci est mon Fils bien-aimé, en qui j'ai mis toute ma joie'.", 
-        fruit: "La fidélité aux promesses de notre baptême et la conscience de notre dignité d'enfants de Dieu.",
+        description: "Jésus, l'Innocent, descend dans les eaux du Jourdain pour recevoir le baptême de Jean, se solidarisant ainsi avec les pécheurs que nous sommes. Au moment où il sort de l'eau, les cieux s'ouvrent, l'Esprit descend comme une colombe et la voix du Père proclame son identité divine. C'est l'investiture solennelle de sa mission messianique.", 
+        fruit: "La fidélité renouvelée aux promesses de notre baptême et la conscience profonde de notre dignité d'enfants de Dieu appelés à la sainteté.",
         scripture: "« Dès que Jésus fut baptisé, il vit l'Esprit de Dieu descendre comme une colombe. » (Mt 3, 16)"
       },
       { 
         title: "Les Noces de Cana", 
-        description: "Lors d'un mariage, le vin venant à manquer, Marie intercède auprès de son Fils. Jésus change l'eau en vin, manifestant ainsi sa gloire. C'est le premier de ses signes, accompli grâce à la foi de sa Mère.", 
-        fruit: "La confiance absolue en l'intercession de Marie et l'écoute de ses conseils : 'Faites tout ce qu'il vous dira'.",
+        description: "Lors d'un mariage, le vin venant à manquer, Marie remarque la détresse des mariés et intercède auprès de son Fils. Bien que son heure ne soit pas encore venue, Jésus change l'eau en vin, manifestant sa gloire. C'est le premier signe de Jésus, accompli par la médiation maternelle de Marie qui nous dit : 'Faites tout ce qu'il vous dira'.", 
+        fruit: "La confiance absolue en l'intercession de Marie, l'écoute de sa parole maternelle et l'ouverture aux miracles de la grâce dans nos vies.",
         scripture: "« Sa mère dit à ceux qui servaient : 'Tout ce qu'il vous dira, faites-le.' » (Jn 2, 5)"
       },
       { 
         title: "L'Annonce du Royaume", 
-        description: "Jésus parcourt les villes et les villages, prêchant la Bonne Nouvelle du Royaume de Dieu et appelant à la conversion. Il guérit les malades et pardonne aux pécheurs, manifestant la miséricorde infinie du Père.", 
-        fruit: "La conversion sincère du cœur et le zèle pour l'évangélisation.",
+        description: "Jésus parcourt la Galilée, prêchant la Bonne Nouvelle : 'Le temps est accompli, le Royaume de Dieu est proche'. Il appelle chacun à la conversion et à croire à l'Évangile. Par ses paroles de vie, ses guérisons et son pardon aux pécheurs, il manifeste que Dieu veut sauver tout homme et l'inviter à sa table.", 
+        fruit: "La conversion sincère et permanente du cœur, le désir de la justice et le zèle pour annoncer l'Évangile par nos actes et nos paroles.",
         scripture: "« Les temps sont accomplis : le règne de Dieu est tout proche. Convertissez-vous. » (Mc 1, 15)"
       },
       { 
         title: "La Transfiguration", 
-        description: "Sur le mont Thabor, devant Pierre, Jacques et Jean, le visage de Jésus devient éclatant comme le soleil et ses vêtements blancs comme la lumière. Moïse et Élie apparaissent, témoignant que Jésus est l'accomplissement de la Loi et des Prophètes.", 
-        fruit: "Le désir de la sainteté et la contemplation de la gloire divine pour fortifier notre foi.",
+        description: "Sur le mont Thabor, devant Pierre, Jacques et Jean, le visage de Jésus devient éclatant comme le soleil. Il révèle sa gloire divine pour fortifier ses disciples avant l'épreuve de la Passion. La voix du Père confirme : 'Celui-ci est mon Fils bien-aimé : écoutez-le !'. Ce moment de lumière nous donne un avant-goût de la résurrection.", 
+        fruit: "Le désir de la sainteté, la contemplation de la gloire de Dieu pour traverser nos ténèbres et une écoute plus attentive de la Parole du Christ.",
         scripture: "« Son visage devint brillant comme le soleil, et ses vêtements, blancs comme la lumière. » (Mt 17, 2)"
       },
       { 
         title: "L'Institution de l'Eucharistie", 
-        description: "Lors de la dernière Cène, Jésus prend le pain et le vin, les bénit et les donne à ses apôtres en disant : 'Ceci est mon corps, ceci est mon sang'. Il institue ainsi le sacrement de son amour permanent parmi nous.", 
-        fruit: "L'amour profond pour l'Eucharistie et la participation fervente au Saint Sacrifice de la Messe.",
+        description: "Lors de la dernière Cène, Jésus prend le pain et le vin, les bénit et les donne à ses apôtres comme son propre Corps et son propre Sang. Il institue le sacrement de l'Eucharistie, mémorial de son sacrifice et nourriture pour notre voyage terrestre. Il nous laisse ainsi le signe suprême de son amour : il reste avec nous jusqu'à la fin des temps.", 
+        fruit: "L'amour profond et l'adoration pour l'Eucharistie, la participation fervente à la Messe et la charité envers nos frères en qui le Christ habite.",
         scripture: "« Ceci est mon corps, donné pour vous. Faites cela en mémoire de moi. » (Lc 22, 19)"
       }
     ]
@@ -238,37 +256,37 @@ export const ROSARY: RosaryCategory[] = [
   {
     id: 'douloureux',
     title: 'Mystères Douloureux',
-    description: "Ces mystères nous font méditer sur la passion et la mort de Jésus, nous montrant le prix infini de notre rédemption.",
+    description: "Ces mystères nous font méditer sur la passion et la mort de Jésus, nous montrant le prix infini de notre rédemption et l'amour fou de Dieu.",
     days: ['Mardi', 'Vendredi'],
     mysteries: [
       { 
         title: "L'Agonie au Jardin", 
-        description: "Au jardin des Oliviers, Jésus ressent l'angoisse devant la souffrance et le poids des péchés du monde. Il prie intensément : 'Père, non pas ma volonté, mais la tienne'. Sa sueur devient comme des gouttes de sang tombant à terre.", 
-        fruit: "La contrition sincère de nos péchés et la force de dire 'Oui' à Dieu dans l'épreuve.",
+        description: "Au jardin des Oliviers, Jésus ressent l'angoisse mortelle devant la souffrance physique et le poids spirituel des péchés de toute l'humanité. Il lutte dans la prière, acceptant la coupe de la douleur par amour pour nous. Sa sueur de sang témoigne de l'intensité de son combat intérieur pour dire 'Oui' au dessein du Père.", 
+        fruit: "La contrition sincère de nos péchés, la force de résister à la tentation et l'acceptation de la volonté de Dieu dans les moments d'obscurité.",
         scripture: "« Père, si tu le veux, éloigne de moi cette coupe ; cependant, que ce ne soit pas ma volonté qui se fasse, mais la tienne. » (Lc 22, 42)"
       },
       { 
         title: "La Flagellation", 
-        description: "Livré aux mains des soldats romains, Jésus est attaché à une colonne et cruellement flagellé. Il endure ce supplice dans le silence et la patience, offrant ses souffrances pour la guérison de nos âmes.", 
-        fruit: "La mortification des sens et la patience héroïque dans les souffrances physiques.",
+        description: "Jésus est livré aux mains des soldats romains qui le dépouillent et l'attachent à une colonne. Il subit le supplice cruel de la flagellation, son corps étant déchiré par les coups. Il endure cette humiliation et cette douleur indicible pour réparer nos péchés de chair et nos manques de respect envers le corps humain, temple de l'Esprit.", 
+        fruit: "La mortification des sens, la maîtrise de nos désirs désordonnés et la patience héroïque dans les souffrances physiques ou morales.",
         scripture: "« Pilate fit alors saisir Jésus pour qu'il soit flagellé. » (Jn 19, 1)"
       },
       { 
         title: "Le Couronnement d'épines", 
-        description: "Par dérision, les soldats tressent une couronne d'épines et l'enfoncent sur la tête de Jésus. Ils le revêtent d'un manteau de pourpre, lui donnent un roseau pour sceptre et se moquent de lui en disant : 'Salut, roi des Juifs !'.", 
-        fruit: "La mortification de l'orgueil et la guérison de nos pensées vaines.",
+        description: "Par dérision, les soldats tressent une couronne d'épines et l'enfoncent sur la tête de Jésus. Ils se moquent de sa royauté, le frappent et lui crachent au visage. Jésus, le Roi de Gloire, accepte ce couronnement de douleur pour racheter nos péchés d'orgueil, nos pensées impures et nos jugements téméraires.", 
+        fruit: "L'humilité de l'esprit, le mépris des vaines gloires du monde et la purification de nos pensées pour les tourner vers ce qui est vrai et saint.",
         scripture: "« Les soldats tressèrent une couronne avec des épines, et la lui mirent sur la tête. » (Jn 19, 2)"
       },
       { 
         title: "Le Portement de la Croix", 
-        description: "Condamné à mort, Jésus charge sa lourde croix sur ses épaules meurtries. Sur le chemin du Calvaire, il porte courageusement son fardeau, tombant plusieurs fois mais se relevant par amour pour nous.", 
-        fruit: "La patience dans les épreuves quotidiennes et le courage de porter notre croix à la suite du Christ.",
+        description: "Condamné à mort, Jésus charge sa lourde croix sur ses épaules meurtries. Épuisé, il tombe plusieurs fois sur le chemin du Calvaire, mais se relève à chaque fois, poussé par son amour pour nous. Il rencontre sa Mère, dont la présence silencieuse partage son fardeau. Il nous montre que suivre le Christ implique de porter sa croix.", 
+        fruit: "La patience dans les épreuves de la vie, le courage de se relever après nos chutes et l'acceptation de nos limites avec confiance en Dieu.",
         scripture: "« Jésus, portant lui-même sa croix, sortit en direction du lieu dit : Le Crâne (Golgotha). » (Jn 19, 17)"
       },
       { 
         title: "Le Crucifiement", 
-        description: "Arrivé au sommet du Calvaire, Jésus est dépouillé de ses vêtements et cloué sur la croix. Après trois heures d'agonie, il pardonne à ses bourreaux, nous donne Marie pour Mère et remet son esprit entre les mains du Père.", 
-        fruit: "Un amour sans bornes pour Dieu et le pardon sincère des offenses reçues.",
+        description: "Arrivé au Calvaire, Jésus est cloué sur la croix. Pendant trois heures d'agonie, il prie pour ses bourreaux, promet le paradis au bon larron et nous donne Marie pour Mère. Enfin, après avoir tout accompli, il remet son esprit entre les mains du Père. Par sa mort, il détruit la mort et nous ouvre les portes de la vie éternelle.", 
+        fruit: "Un amour sans bornes pour Jésus crucifié, le pardon sincère des offenses et la grâce d'une sainte mort en union avec le sacrifice du Christ.",
         scripture: "« Père, entre tes mains je remets mon esprit. » (Lc 23, 46)"
       }
     ]
@@ -276,42 +294,43 @@ export const ROSARY: RosaryCategory[] = [
   {
     id: 'glorieux',
     title: 'Mystères Glorieux',
-    description: "Ces mystères nous font méditer sur la victoire éclatante de Jésus sur la mort et la gloire éternelle qui nous est promise.",
+    description: "Ces mystères nous font méditer sur la victoire éclatante de Jésus sur la mort et la gloire éternelle qui nous est promise en sa présence.",
     days: ['Mercredi', 'Dimanche'],
     mysteries: [
       { 
         title: "La Résurrection", 
-        description: "Le matin de Pâques, Jésus sort victorieux du tombeau, triomphant de la mort et du péché. Il apparaît à Marie-Madeleine et aux apôtres, leur apportant la paix et la certitude que la vie a vaincu la mort.", 
-        fruit: "Une foi vive en la présence du Ressuscité et la joie de vivre en enfants de lumière.",
+        description: "Le matin de Pâques, le tombeau est vide. Jésus est ressuscité ! Il a vaincu la mort et le péché pour toujours. Il apparaît à Marie-Madeleine et aux apôtres, leur montrant ses plaies glorieuses. Sa résurrection est le fondement de notre foi et la preuve que l'amour est plus fort que la mort. La joie de Pâques inonde le monde.", 
+        fruit: "Une foi vive et inébranlable en la présence du Ressuscité, la joie spirituelle et le désir de mener une vie nouvelle selon l'Esprit.",
         scripture: "« Pourquoi cherchez-vous le Vivant parmi les morts ? Il n'est pas ici, il est ressuscité. » (Lc 24, 5-6)"
       },
       { 
         title: "L'Ascension", 
-        description: "Quarante jours après sa résurrection, Jésus monte au ciel en présence de ses disciples. Il s'assoit à la droite du Père, nous ouvrant ainsi le chemin vers notre demeure éternelle et promettant de nous envoyer le Consolateur.", 
-        fruit: "L'espérance ferme et le désir ardent du ciel, notre véritable patrie.",
+        description: "Quarante jours après sa résurrection, Jésus monte au ciel sous les yeux de ses disciples. Il ne nous abandonne pas, mais s'en va nous préparer une place auprès du Père. Il s'assoit à la droite de Dieu, devenant notre intercesseur permanent. Son départ nous appelle à devenir ses témoins jusqu'aux extrémités de la terre.", 
+        fruit: "L'espérance ferme en la vie éternelle, le détachement des choses terrestres et le désir ardent du ciel, notre véritable et seule patrie.",
         scripture: "« Tandis qu'il les bénissait, il se sépara d'eux et fut emporté au ciel. » (Lc 24, 51)"
       },
       { 
         title: "La Pentecôte", 
-        description: "Réunis au Cénacle avec Marie, les apôtres reçoivent le Saint-Esprit sous forme de langues de feu. Remplis de force et de sagesse, ils sortent proclamer les merveilles de Dieu dans toutes les langues.", 
-        fruit: "Le zèle pour l'apostolat et la docilité aux inspirations de l'Esprit Saint.",
+        description: "Réunis au Cénacle avec Marie, les apôtres reçoivent le Saint-Esprit sous forme de langues de feu. La peur disparaît, laissant place à un courage missionnaire immense. L'Église naît officiellement, envoyée porter la Lumière du Christ à toutes les nations. L'Esprit Saint vient habiter nos cœurs pour nous guider vers la vérité tout entière.", 
+        fruit: "Le zèle pour l'apostolat, la docilité aux inspirations de l'Esprit Saint et l'usage de nos talents pour le bien de l'Église et du monde.",
         scripture: "« Tous furent remplis d'Esprit Saint : ils se mirent à parler en d'autres langues. » (Ac 2, 4)"
       },
       { 
         title: "L'Assomption", 
-        description: "Au terme de sa vie terrestre, la Vierge Marie est élevée corps et âme dans la gloire céleste par les anges. Elle est la première créature à participer pleinement à la victoire de son Fils sur la mort.", 
-        fruit: "La grâce d'une sainte mort et une dévotion filiale toujours plus profonde envers Marie.",
+        description: "Au terme de sa vie terrestre, la Vierge Marie est élevée corps et âme dans la gloire céleste par la puissance de Dieu. Elle ne connaît pas la corruption du tombeau. Marie, notre Mère, nous précède dans la gloire, nous montrant la destinée finale de tout homme fidèle à Dieu. Elle est notre signe d'espérance et de consolation.", 
+        fruit: "La grâce d'une sainte mort, le respect pour notre corps comme temple de Dieu et une dévotion filiale toujours plus profonde envers Marie.",
         scripture: "« Un signe grandiose apparut au ciel : une Femme, ayant le soleil pour manteau. » (Ap 12, 1)"
       },
       { 
         title: "Le Couronnement de Marie", 
-        description: "Marie est couronnée Reine du ciel et de la terre par la Très Sainte Trinité. Elle brille désormais comme l'Étoile du matin, intercédant sans cesse pour ses enfants et nous guidant vers le Royaume de son Fils.", 
-        fruit: "La confiance totale en la protection royale de Marie et la persévérance finale dans la grâce.",
+        description: "Marie est couronnée Reine du ciel et de la terre par la Très Sainte Trinité. Elle est la Reine des anges et des saints. Depuis son trône de gloire, elle veille sur nous avec un amour maternel infini, intercédant sans cesse pour ses enfants. Elle nous guide sûrement vers le Royaume de son Fils, Jésus, notre Seigneur.", 
+        fruit: "La confiance totale en la protection royale et maternelle de Marie, la persévérance finale dans la grâce et l'imitation de ses vertus.",
         scripture: "« La lune est sous ses pieds, et sur sa tête une couronne de douze étoiles. » (Ap 12, 1)"
       }
     ]
   }
 ];
+
 
 export interface LiturgicalEvent {
   date: string; // MM-DD format

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useRef, ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { 
   Menu, 
@@ -48,20 +48,76 @@ import { t, type Language } from './i18n';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { TesseraPage } from './components/TesseraPage';
 
+declare var process: any;
+
 // --- Components ---
 
 let aiClient: GoogleGenAI | null = null;
 
 function getAiClient(): GoogleGenAI {
   if (!aiClient) {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('VITE_GEMINI_API_KEY environment variable is required');
+      throw new Error('GEMINI_API_KEY environment variable is required');
     }
     aiClient = new GoogleGenAI({ apiKey });
   }
   return aiClient;
 }
+
+const base64ToAudioBlob = (base64: string, sampleRate: number = 24000) => {
+  const byteCharacters = atob(base64);
+  const pcmData = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    pcmData[i] = byteCharacters.charCodeAt(i);
+  }
+
+  // Check if it already has a RIFF header (WAV)
+  if (pcmData[0] === 0x52 && pcmData[1] === 0x49 && pcmData[2] === 0x46 && pcmData[3] === 0x46) {
+    return new Blob([pcmData], { type: 'audio/wav' });
+  }
+  // Check if it's MP3 (ID3 or sync word)
+  if ((pcmData[0] === 0x49 && pcmData[1] === 0x44 && pcmData[2] === 0x33) || (pcmData[0] === 0xFF && (pcmData[1] & 0xE0) === 0xE0)) {
+    return new Blob([pcmData], { type: 'audio/mp3' });
+  }
+
+  // Otherwise, assume raw PCM (L16) and add WAV header
+  const header = new ArrayBuffer(44);
+  const view = new DataView(header);
+
+  // RIFF identifier
+  view.setUint32(0, 0x52494646, false); // "RIFF"
+  // file length
+  view.setUint32(4, 36 + pcmData.length, true);
+  // WAVE identifier
+  view.setUint32(8, 0x57415645, false); // "WAVE"
+  // fmt chunk identifier
+  view.setUint32(12, 0x666d7420, false); // "fmt "
+  // format chunk length
+  view.setUint32(16, 16, true);
+  // sample format (1 = PCM)
+  view.setUint16(20, 1, true);
+  // channel count (1 = mono)
+  view.setUint16(22, 1, true);
+  // sample rate
+  view.setUint32(24, sampleRate, true);
+  // byte rate (sample rate * block align)
+  view.setUint32(28, sampleRate * 2, true);
+  // block align (channel count * bytes per sample)
+  view.setUint16(32, 2, true);
+  // bits per sample
+  view.setUint16(34, 16, true);
+  // data chunk identifier
+  view.setUint32(36, 0x64617461, false); // "data"
+  // data chunk length
+  view.setUint32(40, pcmData.length, true);
+
+  const wav = new Uint8Array(44 + pcmData.length);
+  wav.set(new Uint8Array(header), 0);
+  wav.set(pcmData, 44);
+  
+  return new Blob([wav], { type: 'audio/wav' });
+};
 
 const Header = ({ onOpenMenu, isDarkMode, isMarianMode, language }: { onOpenMenu: () => void; isDarkMode: boolean; isMarianMode: boolean; language: Language }) => {
   const location = useLocation();
@@ -95,19 +151,19 @@ const Header = ({ onOpenMenu, isDarkMode, isMarianMode, language }: { onOpenMenu
         ? (isMarianMode ? "bg-[#0a1128]/80 border-blue-900 text-blue-50" : "bg-gray-900/80 border-gray-800 text-white") 
         : (isMarianMode ? "bg-[#f0f4f8]/80 border-blue-200 text-[#0a1128]" : "bg-[#fdfcf8]/80 border-amber-100/50 text-[#1a237e]")
     )}>
-      <div className="flex h-20 items-center justify-between px-6 max-w-md mx-auto">
-        <div className="flex items-center gap-4">
+      <div className="flex h-16 items-center justify-between px-4 max-w-md mx-auto">
+        <div className="flex items-center gap-3">
           {!isHome ? (
-            <button onClick={() => navigate(-1)} className={cn("p-3 -ml-2 rounded-full transition-all active:scale-90", isDarkMode ? "hover:bg-gray-800 text-amber-400" : "hover:bg-amber-50 text-[#1a237e]")}>
-              <ArrowLeft size={24} strokeWidth={1.5} />
+            <button onClick={() => navigate(-1)} className={cn("p-2 -ml-2 rounded-full transition-all active:scale-90", isDarkMode ? "hover:bg-gray-800 text-amber-400" : "hover:bg-amber-50 text-[#1a237e]")}>
+              <ArrowLeft size={20} strokeWidth={1.5} />
             </button>
           ) : (
-            <button onClick={onOpenMenu} className={cn("p-3 -ml-2 rounded-full transition-all active:scale-90", isDarkMode ? "hover:bg-gray-800 text-amber-400" : "hover:bg-amber-50 text-[#1a237e]")}>
-              <Menu size={24} strokeWidth={1.5} />
+            <button onClick={onOpenMenu} className={cn("p-2 -ml-2 rounded-full transition-all active:scale-90", isDarkMode ? "hover:bg-gray-800 text-amber-400" : "hover:bg-amber-50 text-[#1a237e]")}>
+              <Menu size={20} strokeWidth={1.5} />
             </button>
           )}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg shadow-blue-900/20 overflow-hidden border border-amber-400/30 p-1">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg shadow-blue-900/20 overflow-hidden border border-amber-400/30 p-1">
               <img 
                 src="https://png.pngtree.com/png-vector/20241231/ourlarge/pngtree-virgin-mary-in-red-cloak-with-sacred-symbol-png-image_14839357.png" 
                 alt="Légion de Marie Logo" 
@@ -120,17 +176,17 @@ const Header = ({ onOpenMenu, isDarkMode, isMarianMode, language }: { onOpenMenu
               />
             </div>
             <div className="flex flex-col -space-y-1">
-              <h1 className={cn("text-xl font-sans font-black tracking-tighter uppercase", isDarkMode ? "text-white" : "text-[#1a237e]")}>Tessera</h1>
-              <span className="text-[7px] font-black text-amber-600 uppercase tracking-[0.4em]">Legio Mariae</span>
+              <h1 className={cn("text-lg font-sans font-black tracking-tighter uppercase", isDarkMode ? "text-white" : "text-[#1a237e]")}>Tessera</h1>
+              <span className="text-[6px] font-black text-amber-600 uppercase tracking-[0.4em]">Legio Mariae</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button 
             onClick={handleShare}
-            className={cn("p-3 rounded-full transition-all active:scale-90", isDarkMode ? "hover:bg-gray-800 text-amber-400" : "hover:bg-amber-50 text-[#1a237e]")}
+            className={cn("p-2 rounded-full transition-all active:scale-90", isDarkMode ? "hover:bg-gray-800 text-amber-400" : "hover:bg-amber-50 text-[#1a237e]")}
           >
-            <Share2 size={22} strokeWidth={1.5} />
+            <Share2 size={20} strokeWidth={1.5} />
           </button>
         </div>
       </div>
@@ -146,7 +202,6 @@ const Drawer = ({ isOpen, onClose, isDarkMode, isMarianMode, language }: { isOpe
     { icon: BookOpen, label: 'Credo', path: '/prayers/credo', category: 'Prières' },
     { icon: Cross, label: t[language].rosary, path: '/rosary', category: 'Prières' },
     { icon: BookOpen, label: 'Tessera', path: '/tessera', category: 'Légion' },
-    { icon: Flag, label: 'Vexillum', path: '/vexillum', category: 'Légion' },
     { icon: BookOpen, label: 'Autres Prières', path: '/prayers/autre', category: 'Prières' },
     ...(isMarianMode ? [{ icon: Heart, label: t[language].marianPrayers, path: '/prayers/marian', category: 'Prières' }] : []),
     { icon: Settings, label: t[language].settings, path: '/settings', category: 'App' },
@@ -190,18 +245,22 @@ const Drawer = ({ isOpen, onClose, isDarkMode, isMarianMode, language }: { isOpe
                     />
                   </div>
                   <div className="relative z-10 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-lg border border-amber-400/30 shrink-0 p-1">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg border border-amber-400/30 shrink-0 p-1">
                       <img 
                         src="https://png.pngtree.com/png-vector/20241231/ourlarge/pngtree-virgin-mary-in-red-cloak-with-sacred-symbol-png-image_14839357.png" 
                         alt="Légion de Marie Logo" 
                         className="w-full h-full object-contain"
                         referrerPolicy="no-referrer"
                         loading="lazy"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="text-[#1a237e] font-sans italic text-xl">M</div>';
+                        }}
                       />
                     </div>
                     <div className="flex flex-col">
-                      <h2 className="text-lg font-sans italic font-bold leading-tight">Légion de Marie</h2>
-                      <p className="text-amber-400 text-[6px] font-black uppercase tracking-[0.3em] opacity-80">Concilium Legionis</p>
+                      <h2 className="text-base font-sans italic font-bold leading-tight">Légion de Marie</h2>
+                      <p className="text-amber-400 text-[5px] font-black capitalize tracking-[0.3em] opacity-80">Concilium Legionis</p>
                     </div>
                     <button 
                       onClick={onClose}
@@ -213,46 +272,56 @@ const Drawer = ({ isOpen, onClose, isDarkMode, isMarianMode, language }: { isOpe
                 </div>
 
                 {/* Drawer Navigation */}
-                <nav className="flex-1 overflow-y-auto">
-                  <div className={cn("grid grid-cols-1 divide-y", isDarkMode ? (isMarianMode ? "divide-blue-900" : "divide-gray-800") : (isMarianMode ? "divide-blue-100" : "divide-amber-50"))}>
-                    {menuItems.map((item) => {
-                      const isActive = location.pathname === item.path;
-                      return (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          onClick={onClose}
-                          className={cn(
-                            "flex items-center justify-between px-6 py-5 transition-all group",
-                            isActive 
-                              ? (isDarkMode 
-                                  ? (isMarianMode ? "bg-blue-900/30 text-blue-400 font-bold" : "bg-gray-800 text-amber-400 font-bold") 
-                                  : (isMarianMode ? "bg-blue-100 text-blue-900 font-bold" : "bg-amber-50 text-[#1a237e] font-bold"))
-                              : (isDarkMode 
-                                  ? (isMarianMode ? "text-blue-200 hover:bg-blue-900/50" : "text-gray-400 hover:bg-gray-800/50") 
-                                  : (isMarianMode ? "text-blue-800 hover:bg-blue-50" : "text-gray-600 hover:bg-gray-50"))
-                          )}
-                        >
-                          <div className="flex items-center gap-4">
-                            <item.icon size={18} strokeWidth={isActive ? 2.5 : 1.5} className={cn(isActive ? (isMarianMode ? "text-blue-500" : "text-amber-600") : (isDarkMode ? (isMarianMode ? "text-blue-400" : "text-gray-600") : (isMarianMode ? "text-blue-400" : "text-gray-400")))} />
-                            <span className="text-sm font-bold tracking-tight uppercase">{item.label}</span>
-                          </div>
-                          {isActive && (
-                            <div className={cn("w-1.5 h-1.5 rounded-full", isMarianMode ? "bg-blue-500" : "bg-amber-600")} />
-                          )}
-                        </Link>
-                      );
-                    })}
-                  </div>
+                <nav className="flex-1 overflow-y-auto py-2">
+                  {Array.from(new Set(menuItems.map(item => item.category))).map((category) => (
+                    <div key={category} className="mb-2">
+                      <div className={cn(
+                        "px-6 py-2 text-[10px] font-black tracking-[0.2em] capitalize opacity-40",
+                        isDarkMode ? "text-blue-200" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]")
+                      )}>
+                        {category}
+                      </div>
+                      <div className={cn("grid grid-cols-1", isDarkMode ? (isMarianMode ? "divide-blue-900/30" : "divide-gray-800/30") : (isMarianMode ? "divide-blue-100/50" : "divide-amber-50/50"))}>
+                        {menuItems.filter(item => item.category === category).map((item) => {
+                          const isActive = location.pathname === item.path;
+                          return (
+                            <Link
+                              key={item.path}
+                              to={item.path}
+                              onClick={onClose}
+                              className={cn(
+                                "flex items-center justify-between px-6 py-4 transition-all group",
+                                isActive 
+                                  ? (isDarkMode 
+                                      ? (isMarianMode ? "bg-blue-900/30 text-blue-400 font-bold" : "bg-gray-800 text-amber-400 font-bold") 
+                                      : (isMarianMode ? "bg-blue-100 text-blue-900 font-bold" : "bg-amber-50 text-[#1a237e] font-bold"))
+                                  : (isDarkMode 
+                                      ? (isMarianMode ? "text-blue-200 hover:bg-blue-900/50" : "text-gray-400 hover:bg-gray-800/50") 
+                                      : (isMarianMode ? "text-blue-800 hover:bg-blue-50" : "text-gray-600 hover:bg-gray-50"))
+                              )}
+                            >
+                              <div className="flex items-center gap-4">
+                                <item.icon size={18} strokeWidth={isActive ? 2.5 : 1.5} className={cn(isActive ? (isMarianMode ? "text-blue-500" : "text-amber-600") : (isDarkMode ? (isMarianMode ? "text-blue-400" : "text-gray-600") : (isMarianMode ? "text-blue-400" : "text-gray-400")))} />
+                                <span className="text-sm font-bold tracking-tight capitalize">{item.label}</span>
+                              </div>
+                              {isActive && (
+                                <div className={cn("w-1.5 h-1.5 rounded-full", isMarianMode ? "bg-blue-500" : "bg-amber-600")} />
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </nav>
 
                 {/* Drawer Footer */}
                 <div className={cn("p-6 border-t text-center", isDarkMode ? (isMarianMode ? "border-blue-900 bg-[#0a1128]/50" : "border-gray-800 bg-gray-900/50") : (isMarianMode ? "border-blue-200 bg-[#f0f4f8]/50" : "border-amber-100 bg-white/50"))}>
-                  <div className={cn("text-[9px] font-black uppercase tracking-[0.3em] mb-1", isDarkMode ? (isMarianMode ? "text-blue-400" : "text-amber-400") : (isMarianMode ? "text-blue-800" : "text-[#1a237e]"))}>
+                  <div className={cn("text-[9px] font-black capitalize tracking-[0.3em] mb-1", isDarkMode ? (isMarianMode ? "text-blue-400" : "text-amber-400") : (isMarianMode ? "text-blue-800" : "text-[#1a237e]"))}>
                     Tessera Digital
                   </div>
-                  <div className="text-[7px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                    v1.0.0 • SPIRITUS SANCTUS
+                  <div className="text-[7px] font-black text-gray-400 capitalize tracking-[0.2em]">
+                    v1.0.0 • Spiritus Sanctus
                   </div>
                 </div>
               </div>
@@ -316,7 +385,7 @@ const HomePage = ({ isDarkMode, isMarianMode, language }: { isDarkMode: boolean;
       className={cn("pb-20 transition-colors duration-300", isDarkMode ? (isMarianMode ? "bg-[#0a1128]" : "bg-gray-900") : (isMarianMode ? "bg-[#f0f4f8]" : "bg-[#fdfcf8]"))}
     >
       {/* Hero Section */}
-      <section className={cn("relative min-h-[20rem] py-12 flex flex-col justify-center items-center p-6 text-center overflow-hidden", isMarianMode ? "bg-blue-800" : "bg-[#1a237e]")}>
+      <section className={cn("relative min-h-[12rem] py-6 flex flex-col justify-center items-center p-6 text-center overflow-hidden", isMarianMode ? "bg-blue-800" : "bg-[#1a237e]")}>
         <div className="absolute inset-0">
           <img 
             src="https://images.unsplash.com/photo-1544427920-c49ccfb85579?q=80&w=1200&auto=format&fit=crop" 
@@ -335,8 +404,8 @@ const HomePage = ({ isDarkMode, isMarianMode, language }: { isDarkMode: boolean;
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg p-1">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-lg p-1">
                 <img 
                   src="https://png.pngtree.com/png-vector/20241231/ourlarge/pngtree-virgin-mary-in-red-cloak-with-sacred-symbol-png-image_14839357.png" 
                   alt="Légion de Marie Logo" 
@@ -344,9 +413,9 @@ const HomePage = ({ isDarkMode, isMarianMode, language }: { isDarkMode: boolean;
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <p className={cn("text-[10px] font-bold uppercase tracking-[0.4em]", isMarianMode ? "text-blue-200" : "text-amber-400")}>Legio Mariae</p>
+              <p className={cn("text-[9px] font-bold uppercase tracking-[0.4em]", isMarianMode ? "text-blue-200" : "text-amber-400")}>Legio Mariae</p>
             </div>
-            <h2 className="text-4xl font-serif font-bold text-white leading-tight mb-4">
+            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-serif font-bold text-white leading-tight mb-2 whitespace-nowrap">
               À Jésus <span className={cn("italic", isMarianMode ? "text-blue-200" : "text-amber-400")}>par Marie</span>
             </h2>
           </motion.div>
@@ -355,29 +424,27 @@ const HomePage = ({ isDarkMode, isMarianMode, language }: { isDarkMode: boolean;
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className={cn("w-full border-t pt-4", isMarianMode ? "border-blue-200/30" : "border-amber-400/30")}
+            className={cn("w-full border-t pt-2", isMarianMode ? "border-blue-200/30" : "border-amber-400/30")}
           >
-            <p className="text-blue-50 text-lg font-serif italic leading-relaxed opacity-90 px-4">
+            <p className="text-blue-50 text-base font-serif italic leading-relaxed opacity-90 px-4">
               "{thought}"
             </p>
           </motion.div>
           
-          {isMarianMode && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-              className="mt-6"
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="mt-4"
+          >
+            <Link
+              to="/prayers/autre"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-white/10 hover:bg-white/20 text-blue-50 rounded-full text-xs font-medium transition-colors border border-white/20 backdrop-blur-sm"
             >
-              <Link
-                to="/prayers/autre"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-blue-50 rounded-full font-medium transition-colors border border-white/20 backdrop-blur-sm"
-              >
-                <Heart size={18} className="text-blue-200" />
-                <span>Découvrir les Prières Mariales</span>
-              </Link>
-            </motion.div>
-          )}
+              <Heart size={14} className={isMarianMode ? "text-blue-200" : "text-amber-400"} />
+              <span>Découvrir mes Prières</span>
+            </Link>
+          </motion.div>
         </div>
       </section>
 
@@ -539,8 +606,8 @@ const PrayersListPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; is
       {/* Search Bar */}
       <div className="px-0">
         <div className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-            <Search size={20} className={cn("transition-colors", isMarianMode ? "text-blue-400 group-focus-within:text-blue-600" : "text-gray-400 group-focus-within:text-amber-600")} />
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search size={18} className={cn("transition-colors", isMarianMode ? "text-blue-400 group-focus-within:text-blue-600" : "text-gray-400 group-focus-within:text-amber-600")} />
           </div>
           <input
             type="text"
@@ -548,7 +615,7 @@ const PrayersListPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; is
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={cn(
-              "w-full rounded-[2rem] py-5 pl-14 pr-6 text-base font-medium focus:outline-none focus:ring-4 transition-all",
+              "w-full rounded-2xl py-2.5 pl-11 pr-10 text-sm font-medium focus:outline-none focus:ring-4 transition-all",
               isDarkMode 
                 ? (isMarianMode ? "bg-blue-900/30 text-white placeholder-blue-300 focus:ring-blue-500/20" : "bg-gray-800 text-white placeholder-gray-500 focus:ring-amber-400/10") 
                 : (isMarianMode ? "bg-white text-blue-900 focus:ring-blue-200/50" : "bg-white text-gray-900 focus:ring-amber-400/10")
@@ -557,9 +624,9 @@ const PrayersListPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; is
           {searchQuery && (
             <button 
               onClick={() => setSearchQuery('')}
-              className={cn("absolute inset-y-0 right-0 pr-5 flex items-center", isMarianMode ? "text-blue-400 hover:text-blue-600" : "text-gray-400 hover:text-amber-600")}
+              className={cn("absolute inset-y-0 right-0 pr-4 flex items-center", isMarianMode ? "text-blue-400 hover:text-blue-600" : "text-gray-400 hover:text-amber-600")}
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           )}
         </div>
@@ -732,6 +799,7 @@ const PrayerDetailPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; i
   const [isFavorite, setIsFavorite] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | undefined>(prayer?.audioUrl);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -743,6 +811,7 @@ const PrayerDetailPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; i
   const generateAudio = async () => {
     if (!prayer || isGenerating) return;
     setIsGenerating(true);
+    setError(null);
     const voice = localStorage.getItem('voice') || 'Zephyr';
     try {
       const response = await getAiClient().models.generateContent({
@@ -757,24 +826,26 @@ const PrayerDetailPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; i
           },
         },
       });
-      console.log("Audio generation response:", response);
-      console.log("Response text:", response.text);
 
       const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-      console.log("Base64 audio:", base64Audio ? "Found" : "Not found");
       if (base64Audio) {
-        const audioBlob = new Blob(
-          [Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0))],
-          { type: 'audio/mpeg' }
-        );
+        const audioBlob = base64ToAudioBlob(base64Audio);
         const url = URL.createObjectURL(audioBlob);
         setAudioUrl(url);
         
-        // Auto-play the audio
-        // Removed programmatic play() to prevent browser blocking
+        // Try to auto-play
+        setTimeout(() => {
+          const audioElement = document.getElementById('prayer-audio') as HTMLAudioElement;
+          if (audioElement) {
+            audioElement.play().catch(e => console.error("Auto-play failed:", e));
+          }
+        }, 100);
+      } else {
+        setError("Erreur : Aucun audio généré.");
       }
     } catch (error) {
       console.error("Audio generation failed:", error);
+      setError("Erreur lors de la génération de l'audio. Veuillez réessayer.");
     } finally {
       setIsGenerating(false);
     }
@@ -846,6 +917,11 @@ const PrayerDetailPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; i
         )}
         
         <div className="mb-10">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm text-center font-medium">
+              {error}
+            </div>
+          )}
           {audioUrl ? (
             <div className={cn("p-6 rounded-[2rem] border shadow-inner", isDarkMode ? (isMarianMode ? "bg-blue-900/50 border-blue-800" : "bg-gray-900 border-gray-700") : (isMarianMode ? "bg-blue-50 border-blue-100" : "bg-amber-50 border-amber-100"))}>
               <audio key={audioUrl} id="prayer-audio" controls src={audioUrl} className="w-full h-10" />
@@ -927,6 +1003,7 @@ const RosaryPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMaria
     return ROSARY.find(cat => cat.days.includes(currentDayReal)) || ROSARY[0];
   });
   const [completedMysteries, setCompletedMysteries] = useState<string[]>([]);
+  const [activeMysteryIndex, setActiveMysteryIndex] = useState<number | null>(null);
 
   const handleDaySelect = (day: string) => {
     setSelectedDay(day);
@@ -934,6 +1011,7 @@ const RosaryPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMaria
     if (category) {
       setSelectedCategory(category);
       setCompletedMysteries([]); // Reset progress when changing day
+      setActiveMysteryIndex(null);
     }
   };
 
@@ -941,6 +1019,18 @@ const RosaryPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMaria
     setCompletedMysteries(prev => 
       prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
     );
+  };
+
+  const nextMystery = () => {
+    if (activeMysteryIndex !== null && activeMysteryIndex < selectedCategory.mysteries.length - 1) {
+      setActiveMysteryIndex(activeMysteryIndex + 1);
+    }
+  };
+
+  const prevMystery = () => {
+    if (activeMysteryIndex !== null && activeMysteryIndex > 0) {
+      setActiveMysteryIndex(activeMysteryIndex - 1);
+    }
   };
 
   const progress = (completedMysteries.length / selectedCategory.mysteries.length) * 100;
@@ -997,110 +1087,191 @@ const RosaryPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMaria
       </div>
 
       {/* Category Selection - Compact Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {ROSARY.map(cat => (
-          <motion.button
-            key={cat.id}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              setSelectedCategory(cat);
-              setSelectedDay(cat.days[0]);
-              setCompletedMysteries([]); // Reset progress
-            }}
-            className={cn(
-              "p-5 rounded-[2.5rem] text-left transition-all border flex flex-col justify-center h-24 relative overflow-hidden shadow-sm",
-              selectedCategory.id === cat.id 
-                ? (isMarianMode ? "bg-blue-400 text-white border-blue-500 shadow-xl shadow-blue-400/20" : "bg-amber-400 text-[#1a237e] border-amber-500 shadow-xl shadow-amber-400/20") 
-                : (isDarkMode ? (isMarianMode ? "bg-blue-900/20 text-blue-300 border-blue-800" : "bg-gray-800 text-gray-400 border-gray-700") : (isMarianMode ? "bg-white text-blue-500 border-blue-100" : "bg-white text-gray-500 border-gray-100"))
-            )}
-          >
-            <h4 className="font-serif font-black text-sm uppercase tracking-tight leading-tight">{cat.title}</h4>
-            <span className={cn(
-              "text-[9px] font-black uppercase tracking-widest mt-2 opacity-70",
-              selectedCategory.id === cat.id ? (isMarianMode ? "text-blue-100" : "text-[#1a237e]") : "text-gray-400"
-            )}>
-              {cat.days.join(', ')}
-            </span>
-          </motion.button>
-        ))}
-      </div>
+      {activeMysteryIndex === null && (
+        <div className="grid grid-cols-2 gap-4">
+          {ROSARY.map(cat => (
+            <motion.button
+              key={cat.id}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setSelectedCategory(cat);
+                setSelectedDay(cat.days[0]);
+                setCompletedMysteries([]); // Reset progress
+                setActiveMysteryIndex(null);
+              }}
+              className={cn(
+                "p-5 rounded-[2.5rem] text-left transition-all border flex flex-col justify-center h-24 relative overflow-hidden shadow-sm",
+                selectedCategory.id === cat.id 
+                  ? (isMarianMode ? "bg-blue-400 text-white border-blue-500 shadow-xl shadow-blue-400/20" : "bg-amber-400 text-[#1a237e] border-amber-500 shadow-xl shadow-amber-400/20") 
+                  : (isDarkMode ? (isMarianMode ? "bg-blue-900/20 text-blue-300 border-blue-800" : "bg-gray-800 text-gray-400 border-gray-700") : (isMarianMode ? "bg-white text-blue-500 border-blue-100" : "bg-white text-gray-500 border-gray-100"))
+              )}
+            >
+              <h4 className="font-serif font-black text-sm uppercase tracking-tight leading-tight">{cat.title}</h4>
+              <span className={cn(
+                "text-[9px] font-black uppercase tracking-widest mt-2 opacity-70",
+                selectedCategory.id === cat.id ? (isMarianMode ? "text-blue-100" : "text-[#1a237e]") : "text-gray-400"
+              )}>
+                {cat.days.join(', ')}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+      )}
 
       {/* Mysteries List - Timeline Style */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={selectedCategory.id}
+          key={activeMysteryIndex !== null ? `mystery-${activeMysteryIndex}` : selectedCategory.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-8 pt-4"
         >
-          <div className={cn("px-6 py-6 rounded-[2.5rem] border shadow-xl text-center", isDarkMode ? "bg-gray-800 border-gray-700 shadow-none" : (isMarianMode ? "bg-white border-blue-50 shadow-blue-200/30" : "bg-white border-gray-50 shadow-gray-200/30"))}>
-            <p className={cn("text-lg leading-relaxed italic font-serif opacity-90", isDarkMode ? "text-gray-300" : (isMarianMode ? "text-blue-800" : "text-gray-600"))}>
-              "{selectedCategory.description}"
-            </p>
-          </div>
+          {activeMysteryIndex === null ? (
+            <>
+              <div className={cn("px-6 py-6 rounded-[2.5rem] border shadow-xl text-center", isDarkMode ? "bg-gray-800 border-gray-700 shadow-none" : (isMarianMode ? "bg-white border-blue-50 shadow-blue-200/30" : "bg-white border-gray-50 shadow-gray-200/30"))}>
+                <p className={cn("text-lg leading-relaxed italic font-serif opacity-90", isDarkMode ? "text-gray-300" : (isMarianMode ? "text-blue-800" : "text-gray-600"))}>
+                  "{selectedCategory.description}"
+                </p>
+              </div>
 
-          <div className="space-y-10 relative">
-            {selectedCategory.mysteries.map((mystery, idx) => {
-              const isCompleted = completedMysteries.includes(mystery.title);
-              
-              return (
-                <motion.div
-                  key={mystery.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.08 }}
-                  className="relative"
-                  onClick={() => toggleMystery(mystery.title)}
-                >
-                  <div className={cn(
-                    "p-6 rounded-[2.5rem] transition-all cursor-pointer group",
-                    isCompleted 
-                      ? (isDarkMode ? (isMarianMode ? "bg-blue-900/20" : "bg-amber-900/20") : (isMarianMode ? "bg-blue-50" : "bg-amber-50")) 
-                      : (isDarkMode ? "bg-gray-800" : "bg-white")
-                  )}>
-                    <div className="flex items-center justify-between gap-4 mb-4">
-                      <h3 className={cn("font-serif font-bold text-2xl leading-tight tracking-tight", isDarkMode ? "text-white" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]"))}>{mystery.title}</h3>
-                      {isCompleted && (
-                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shadow-lg", isMarianMode ? "bg-blue-400 text-white shadow-blue-400/20" : "bg-amber-400 text-[#1a237e] shadow-amber-400/20")}>
-                          <CheckCircle2 size={18} strokeWidth={3} />
+              <div className="space-y-10 relative">
+                {selectedCategory.mysteries.map((mystery, idx) => {
+                  const isCompleted = completedMysteries.includes(mystery.title);
+                  
+                  return (
+                    <motion.div
+                      key={mystery.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.08 }}
+                      className="relative"
+                      onClick={() => setActiveMysteryIndex(idx)}
+                    >
+                      <div className={cn(
+                        "p-6 rounded-[2.5rem] transition-all cursor-pointer group",
+                        isCompleted 
+                          ? (isDarkMode ? (isMarianMode ? "bg-blue-900/20" : "bg-amber-900/20") : (isMarianMode ? "bg-blue-50" : "bg-amber-50")) 
+                          : (isDarkMode ? "bg-gray-800" : "bg-white")
+                      )}>
+                        <div className="flex items-center justify-between gap-4 mb-4">
+                          <h3 className={cn("font-serif font-bold text-2xl leading-tight tracking-tight", isDarkMode ? "text-white" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]"))}>{mystery.title}</h3>
+                          {isCompleted && (
+                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shadow-lg", isMarianMode ? "bg-blue-400 text-white shadow-blue-400/20" : "bg-amber-400 text-[#1a237e] shadow-amber-400/20")}>
+                              <CheckCircle2 size={18} strokeWidth={3} />
+                            </div>
+                          )}
                         </div>
-                      )}
+                        
+                        <p className={cn("text-lg leading-relaxed font-medium italic opacity-90 border-l-2 pl-6 line-clamp-2", isDarkMode ? "text-gray-300" : (isMarianMode ? "text-blue-800" : "text-gray-600"), isMarianMode ? "border-blue-400/30" : "border-amber-400/30")}>
+                          {mystery.description}
+                        </p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <div className="space-y-8">
+              <button 
+                onClick={() => setActiveMysteryIndex(null)}
+                className={cn("flex items-center gap-2 text-sm font-black uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity", isDarkMode ? "text-white" : "text-[#1a237e]")}
+              >
+                <ArrowLeft size={16} />
+                Retour à la liste
+              </button>
+
+              {(() => {
+                const mystery = selectedCategory.mysteries[activeMysteryIndex];
+                const isCompleted = completedMysteries.includes(mystery.title);
+                
+                return (
+                  <div className={cn(
+                    "p-8 rounded-[3rem] transition-all border shadow-2xl",
+                    isDarkMode ? "bg-gray-800 border-gray-700" : (isMarianMode ? "bg-white border-blue-50 shadow-blue-200/20" : "bg-white border-amber-50 shadow-amber-200/20")
+                  )}>
+                    <div className="flex items-center justify-between gap-4 mb-8">
+                      <div className="space-y-1">
+                        <p className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-60", isMarianMode ? "text-blue-600" : "text-amber-600")}>Mystère {activeMysteryIndex + 1} sur 5</p>
+                        <h3 className={cn("font-serif font-bold text-3xl leading-tight tracking-tight", isDarkMode ? "text-white" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]"))}>{mystery.title}</h3>
+                      </div>
+                      <button 
+                        onClick={() => toggleMystery(mystery.title)}
+                        className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-lg",
+                          isCompleted 
+                            ? (isMarianMode ? "bg-blue-400 text-white shadow-blue-400/30" : "bg-amber-400 text-[#1a237e] shadow-amber-400/30")
+                            : (isDarkMode ? "bg-gray-700 text-gray-400" : "bg-gray-100 text-gray-400")
+                        )}
+                      >
+                        <CheckCircle2 size={24} strokeWidth={2.5} />
+                      </button>
                     </div>
                     
-                    <p className={cn("text-lg leading-relaxed font-medium italic opacity-90 border-l-2 pl-6 mb-6", isDarkMode ? "text-gray-300" : (isMarianMode ? "text-blue-800" : "text-gray-600"), isMarianMode ? "border-blue-400/30" : "border-amber-400/30")}>
+                    <p className={cn("text-xl leading-relaxed font-medium italic opacity-90 border-l-4 pl-8 mb-10", isDarkMode ? "text-gray-300" : (isMarianMode ? "text-blue-800" : "text-gray-600"), isMarianMode ? "border-blue-400/30" : "border-amber-400/30")}>
                       {mystery.description}
                     </p>
 
                     {mystery.scripture && (
-                      <div className={cn("flex items-start gap-4 mb-6 p-6 rounded-2xl border", isDarkMode ? "bg-gray-900/50 border-gray-700" : (isMarianMode ? "bg-blue-50/50 border-blue-100/50" : "bg-gray-50/50 border-gray-100/50"))}>
-                        <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-1", isMarianMode ? "bg-blue-100" : "bg-blue-50")}>
-                          <Book size={16} className={cn(isMarianMode ? "text-blue-800" : "text-blue-700")} />
+                      <div className={cn("flex items-start gap-6 mb-10 p-8 rounded-3xl border", isDarkMode ? "bg-gray-900/50 border-gray-700" : (isMarianMode ? "bg-blue-50/50 border-blue-100/50" : "bg-gray-50/50 border-gray-100/50"))}>
+                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-1", isMarianMode ? "bg-blue-100" : "bg-blue-50")}>
+                          <Book size={20} className={cn(isMarianMode ? "text-blue-800" : "text-blue-700")} />
                         </div>
-                        <p className={cn("font-serif italic text-lg leading-relaxed", isDarkMode ? "text-blue-300/80" : "text-blue-900/80")}>
+                        <p className={cn("font-serif italic text-xl leading-relaxed", isDarkMode ? "text-blue-300/80" : "text-blue-900/80")}>
                           {mystery.scripture}
                         </p>
                       </div>
                     )}
                     
-                    <div className={cn("flex items-center gap-4 pt-6 border-t", isDarkMode ? "border-gray-700" : (isMarianMode ? "border-blue-100" : "border-gray-100"))}>
-                      <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", isMarianMode ? "bg-blue-100" : "bg-amber-100")}>
-                        <Flag size={16} className={cn(isMarianMode ? "text-blue-700" : "text-amber-700")} fill="currentColor" />
+                    <div className={cn("flex items-center gap-6 pt-8 border-t", isDarkMode ? "border-gray-700" : (isMarianMode ? "border-blue-100" : "border-gray-100"))}>
+                      <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isMarianMode ? "bg-blue-100" : "bg-amber-100")}>
+                        <Flag size={20} className={cn(isMarianMode ? "text-blue-700" : "text-amber-700")} fill="currentColor" />
                       </div>
                       <div>
                         <p className={cn("font-black text-[10px] uppercase tracking-[0.2em] opacity-60 mb-1", isMarianMode ? "text-blue-900" : "text-amber-900")}>Fruit du mystère</p>
-                        <p className={cn("font-serif font-bold text-lg italic", isDarkMode ? (isMarianMode ? "text-blue-400" : "text-amber-400") : (isMarianMode ? "text-blue-800" : "text-[#1a237e]"))}>
+                        <p className={cn("font-serif font-bold text-xl italic", isDarkMode ? (isMarianMode ? "text-blue-400" : "text-amber-400") : (isMarianMode ? "text-blue-800" : "text-[#1a237e]"))}>
                           {mystery.fruit}
                         </p>
                       </div>
                     </div>
+
+                    {/* Navigation Buttons */}
+                      <div className="flex gap-3 mt-10">
+                        <button
+                          disabled={activeMysteryIndex === 0}
+                          onClick={prevMystery}
+                          className={cn(
+                            "flex-1 py-2 rounded-2xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 border transition-all",
+                            activeMysteryIndex === 0 
+                              ? "opacity-30 cursor-not-allowed" 
+                              : (isDarkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-200 text-gray-900 shadow-sm hover:shadow-md")
+                          )}
+                        >
+                          <ChevronLeft size={16} />
+                          Précédent
+                        </button>
+                        <button
+                          disabled={activeMysteryIndex === selectedCategory.mysteries.length - 1}
+                          onClick={nextMystery}
+                          className={cn(
+                            "flex-1 py-2 rounded-2xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 transition-all shadow-xl",
+                            activeMysteryIndex === selectedCategory.mysteries.length - 1
+                              ? "opacity-30 cursor-not-allowed"
+                              : (isMarianMode ? "bg-blue-600 text-white shadow-blue-600/20" : "bg-[#1a237e] text-white shadow-blue-900/20")
+                          )}
+                        >
+                          Suivant
+                          <ChevronRight size={16} />
+                        </button>
+                      </div>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                );
+              })()}
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
     </motion.div>
@@ -1139,16 +1310,43 @@ const SettingsPage = ({
 
   const handleToggleNotifications = async () => {
     if (!notificationsEnabled) {
-      if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          setNotificationsEnabled(true);
+      if (!('Notification' in window)) {
+        alert(t[language].notificationNotSupported);
+        return;
+      }
+
+      if (Notification.permission === 'denied') {
+        alert(t[language].notificationPermissionDenied);
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        setNotificationsEnabled(true);
+        try {
+          new Notification(t[language].angelusTime, {
+            body: t[language].notificationTestSent,
+            icon: "https://png.pngtree.com/png-vector/20241231/ourlarge/pngtree-virgin-mary-in-red-cloak-with-sacred-symbol-png-image_14839357.png"
+          });
+        } catch (e) {
+          console.error("Failed to send test notification:", e);
         }
       } else {
-        setNotificationsEnabled(true);
+        setNotificationsEnabled(false);
       }
     } else {
       setNotificationsEnabled(false);
+    }
+  };
+
+  const sendTestNotification = () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(t[language].angelusTime, {
+        body: t[language].notificationTestSent,
+        icon: "https://png.pngtree.com/png-vector/20241231/ourlarge/pngtree-virgin-mary-in-red-cloak-with-sacred-symbol-png-image_14839357.png"
+      });
+    } else {
+      handleToggleNotifications();
     }
   };
 
@@ -1173,14 +1371,16 @@ const SettingsPage = ({
 
       const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
       if (base64Audio) {
-        const audioBlob = new Blob(
-          [Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0))],
-          { type: 'audio/mpeg' }
-        );
-        const audio = new Audio(URL.createObjectURL(audioBlob));
-        audio.onended = () => setIsPreviewing(null);
-        // Removed programmatic play() to prevent browser blocking
-        // User must click a play button to hear the preview
+        const audioBlob = base64ToAudioBlob(base64Audio);
+        const url = URL.createObjectURL(audioBlob);
+        const audioElement = document.getElementById('preview-audio') as HTMLAudioElement;
+        if (audioElement) {
+          audioElement.src = url;
+          audioElement.play().catch(e => {
+            console.error("Audio play failed:", e);
+            setIsPreviewing(null);
+          });
+        }
       } else {
         setIsPreviewing(null);
       }
@@ -1272,10 +1472,27 @@ const SettingsPage = ({
               />
             </button>
           </div>
+          {notificationsEnabled && (
+            <div className="px-6 pb-6">
+              <button 
+                onClick={sendTestNotification}
+                className={cn(
+                  "w-full py-3 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2",
+                  isDarkMode 
+                    ? (isMarianMode ? "bg-blue-800/40 text-blue-300 border border-blue-700" : "bg-amber-900/20 text-amber-400 border border-amber-800/50") 
+                    : (isMarianMode ? "bg-blue-50 text-blue-700 border border-blue-100" : "bg-amber-50 text-amber-700 border border-amber-100")
+                )}
+              >
+                <Bell size={16} />
+                {t[language].testNotification}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
       {/* Audio Section */}
+      <audio id="preview-audio" className="hidden" onEnded={() => setIsPreviewing(null)} />
       <section className="space-y-4">
         <h3 className={cn("px-2 text-sm font-black uppercase tracking-widest", isDarkMode ? "text-gray-400" : (isMarianMode ? "text-blue-800" : "text-gray-500"))}>{t[language].audioVoice}</h3>
         <div className={cn("rounded-[2.5rem] shadow-sm border overflow-hidden p-6 space-y-6", isDarkMode ? (isMarianMode ? "bg-blue-900/20 border-blue-800" : "bg-gray-800 border-gray-700") : (isMarianMode ? "bg-white border-blue-50" : "bg-white border-amber-50"))}>
@@ -1345,80 +1562,6 @@ const SettingsPage = ({
   );
 };
 
-const VexillumPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarianMode: boolean }) => {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cn("p-6 space-y-10 pb-24 transition-colors duration-300", isDarkMode ? (isMarianMode ? "bg-[#0a1128]" : "bg-gray-900") : (isMarianMode ? "bg-[#f0f4f8]" : "bg-[#fdfcf8]"))}
-    >
-      <div className="px-2">
-        <p className={cn("text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-60", isDarkMode ? (isMarianMode ? "text-blue-400" : "text-amber-400") : (isMarianMode ? "text-blue-700" : "text-amber-700"))}>Légion de Marie</p>
-        <h2 className={cn("text-4xl font-serif italic font-bold tracking-tight", isDarkMode ? "text-white" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]"))}>{VEXILLUM_INFO.title}</h2>
-      </div>
-
-      <section className={cn("p-8 rounded-[3rem] space-y-8 shadow-sm border", isDarkMode ? (isMarianMode ? "bg-blue-900/20 border-blue-800" : "bg-gray-800 border-gray-700") : (isMarianMode ? "bg-white border-blue-50" : "bg-white border-amber-50"))}>
-        <div className="flex flex-col items-center text-center space-y-6">
-          <div className={cn("w-40 h-40 rounded-full flex items-center justify-center p-8 shadow-inner border relative overflow-hidden", isDarkMode ? (isMarianMode ? "bg-blue-800 border-blue-700" : "bg-gray-700 border-gray-600") : (isMarianMode ? "bg-blue-50 border-blue-100" : "bg-amber-50 border-amber-100"))}>
-            <img 
-              src={VEXILLUM_INFO.image} 
-              alt="Vexillum Legionis" 
-              className="w-full h-full object-contain relative z-10"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                if (target.parentElement) {
-                  const fallback = document.createElement('div');
-                  fallback.className = 'flex flex-col items-center text-amber-600 opacity-20';
-                  fallback.innerHTML = '<svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" stroke-width="1" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>';
-                  target.parentElement.appendChild(fallback);
-                }
-              }}
-            />
-            <div className={cn("absolute inset-0 bg-gradient-to-tr pointer-events-none", isMarianMode ? "from-blue-400/5 to-transparent" : "from-amber-400/5 to-transparent")} />
-          </div>
-          <div className="space-y-4">
-            <h3 className={cn("text-xl font-bold", isDarkMode ? (isMarianMode ? "text-blue-300" : "text-amber-400") : (isMarianMode ? "text-blue-800" : "text-[#1a237e]"))}>Histoire</h3>
-            <p className={cn("leading-relaxed italic font-serif text-lg opacity-90", isDarkMode ? "text-gray-300" : (isMarianMode ? "text-blue-900" : "text-gray-600"))}>
-              {VEXILLUM_INFO.history}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-6">
-        <h3 className={cn("px-2 text-sm font-black uppercase tracking-widest", isDarkMode ? "text-gray-400" : (isMarianMode ? "text-blue-800" : "text-gray-500"))}>Symbolique</h3>
-        <div className="grid gap-4">
-          {VEXILLUM_INFO.symbolism.map((symbol, idx) => (
-            <motion.div 
-              key={idx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className={cn("p-6 rounded-[2rem] border shadow-sm space-y-2", isDarkMode ? (isMarianMode ? "bg-blue-900/20 border-blue-800" : "bg-gray-800 border-gray-700") : (isMarianMode ? "bg-white border-blue-50" : "bg-white border-amber-50"))}
-            >
-              <h4 className={cn("font-bold flex items-center gap-2", isDarkMode ? (isMarianMode ? "text-blue-300" : "text-amber-400") : (isMarianMode ? "text-blue-800" : "text-[#1a237e]"))}>
-                <div className={cn("w-2 h-2 rounded-full", isMarianMode ? "bg-blue-400" : "bg-amber-400")} />
-                {symbol.item}
-              </h4>
-              <p className={cn("text-sm leading-relaxed", isDarkMode ? "text-gray-400" : "text-gray-500")}>{symbol.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      <section className={cn("p-10 rounded-[3rem] shadow-2xl space-y-6 relative overflow-hidden", isDarkMode ? "bg-blue-900 shadow-blue-900/50" : "bg-[#1a237e] shadow-blue-900/30")}>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16" />
-        <h3 className="font-serif italic font-bold text-2xl text-amber-400 relative z-10">Signification Spirituelle</h3>
-        <p className="text-blue-100 leading-relaxed text-lg italic font-serif relative z-10 opacity-90">
-          {VEXILLUM_INFO.detailedDescription}
-        </p>
-      </section>
-    </motion.div>
-  );
-};
-
 const AboutPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarianMode: boolean }) => {
   return (
     <motion.div 
@@ -1427,7 +1570,7 @@ const AboutPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarian
       className={cn("p-6 space-y-10 pb-24 transition-colors duration-300", isDarkMode ? (isMarianMode ? "bg-[#0a1128]" : "bg-gray-900") : (isMarianMode ? "bg-[#f0f4f8]" : "bg-[#fdfcf8]"))}
     >
       <div className="text-center space-y-6 pt-4">
-        <div className={cn("w-28 h-28 rounded-[2rem] flex items-center justify-center shadow-xl mx-auto border-2 overflow-hidden p-2", isDarkMode ? (isMarianMode ? "bg-blue-900 border-blue-800 shadow-blue-900/20" : "bg-gray-800 border-gray-700 shadow-gray-900/20") : (isMarianMode ? "bg-white border-blue-200 shadow-blue-200/20" : "bg-white border-amber-400/30 shadow-blue-900/20"))}>
+        <div className={cn("w-20 h-20 rounded-[1.5rem] flex items-center justify-center shadow-xl mx-auto border-2 overflow-hidden p-2", isDarkMode ? (isMarianMode ? "bg-blue-900 border-blue-800 shadow-blue-900/20" : "bg-gray-800 border-gray-700 shadow-gray-900/20") : (isMarianMode ? "bg-white border-blue-200 shadow-blue-200/20" : "bg-white border-amber-400/30 shadow-blue-900/20"))}>
           <img 
             src="https://png.pngtree.com/png-vector/20241231/ourlarge/pngtree-virgin-mary-in-red-cloak-with-sacred-symbol-png-image_14839357.png" 
             alt="Légion de Marie Logo" 
@@ -1443,6 +1586,7 @@ const AboutPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarian
           <h2 className={cn("text-3xl font-serif italic font-bold tracking-tighter", isDarkMode ? "text-white" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]"))}>Tessera Digital</h2>
           <p className={cn("font-black text-[10px] uppercase tracking-[0.4em] mt-3 opacity-60", isDarkMode ? (isMarianMode ? "text-blue-400" : "text-amber-400") : (isMarianMode ? "text-blue-700" : "text-amber-700"))}>Légion de Marie</p>
           <p className={cn("text-[10px] mt-4 font-bold tracking-widest", isDarkMode ? "text-gray-500" : "text-gray-400")}>VERSION 1.0.0 • SPIRITUS SANCTUS</p>
+          <p className={cn("text-[10px] mt-1 font-black uppercase tracking-[0.2em] opacity-40", isDarkMode ? "text-gray-500" : "text-gray-400")}>made by Steven Kwdja</p>
         </div>
       </div>
 
@@ -1463,13 +1607,13 @@ const AboutPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarian
           <h3 className={cn("font-serif italic font-bold text-xl text-center tracking-tight", isDarkMode ? (isMarianMode ? "text-blue-300" : "text-amber-400") : (isMarianMode ? "text-blue-800" : "text-[#1a237e]"))}>Contact & Réseaux</h3>
           
           <div className="flex flex-col gap-4">
-            <a href="mailto:contact@legionofmary.ie" className={cn("flex items-center gap-4 p-4 rounded-2xl transition-colors", isDarkMode ? (isMarianMode ? "bg-blue-800/50 hover:bg-blue-800 text-blue-100" : "bg-gray-700/50 hover:bg-gray-700 text-gray-200") : (isMarianMode ? "bg-blue-50 hover:bg-blue-100 text-blue-900" : "bg-gray-50 hover:bg-amber-50 text-gray-700"))}>
+            <a href="mailto:aubinkwdja@gmail.com" className={cn("flex items-center gap-4 p-4 rounded-2xl transition-colors", isDarkMode ? (isMarianMode ? "bg-blue-800/50 hover:bg-blue-800 text-blue-100" : "bg-gray-700/50 hover:bg-gray-700 text-gray-200") : (isMarianMode ? "bg-blue-50 hover:bg-blue-100 text-blue-900" : "bg-gray-50 hover:bg-amber-50 text-gray-700"))}>
               <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0", isDarkMode ? (isMarianMode ? "bg-blue-700 text-blue-300" : "bg-gray-600 text-amber-400") : (isMarianMode ? "bg-white text-blue-800 shadow-sm" : "bg-white text-[#1a237e] shadow-sm"))}>
                 <Mail size={20} />
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm">Nous contacter</p>
-                <p className={cn("text-xs", isDarkMode ? (isMarianMode ? "text-blue-300" : "text-gray-400") : (isMarianMode ? "text-blue-600" : "text-gray-500"))}>contact@legionofmary.ie</p>
+                <p className={cn("text-xs", isDarkMode ? (isMarianMode ? "text-blue-300" : "text-gray-400") : (isMarianMode ? "text-blue-600" : "text-gray-500"))}>aubinkwdja@gmail.com</p>
               </div>
             </a>
 
@@ -1634,6 +1778,13 @@ const AppContent = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
     return localStorage.getItem('notifications') === 'true';
   });
+
+  useEffect(() => {
+    if (notificationsEnabled && 'Notification' in window && Notification.permission !== 'granted') {
+      setNotificationsEnabled(false);
+      localStorage.setItem('notifications', 'false');
+    }
+  }, []);
   const [selectedVoice, setSelectedVoice] = useState(() => {
     return localStorage.getItem('voice') || 'Zephyr';
   });
@@ -1654,20 +1805,22 @@ const AppContent = () => {
     localStorage.setItem('language', language);
   }, [language]);
 
+  const lastTriggeredHourRef = useRef<number>(-1);
+
   useEffect(() => {
     localStorage.setItem('notifications', notificationsEnabled.toString());
     
     if (!notificationsEnabled) return;
 
-    let lastTriggeredHour = -1;
     const checkPrayerTimes = () => {
       const now = new Date();
       const hours = now.getHours();
       const minutes = now.getMinutes();
 
+      // Angelus times: 6h, 12h, 18h
       if ((hours === 6 || hours === 12 || hours === 18) && minutes === 0) {
-        if (lastTriggeredHour !== hours) {
-          lastTriggeredHour = hours;
+        if (lastTriggeredHourRef.current !== hours) {
+          lastTriggeredHourRef.current = hours;
           if ('Notification' in window && Notification.permission === 'granted') {
             new Notification(t[language].angelusTime, {
               body: t[language].angelusBody,
@@ -1676,11 +1829,11 @@ const AppContent = () => {
           }
         }
       } else if (minutes !== 0) {
-        lastTriggeredHour = -1;
+        lastTriggeredHourRef.current = -1;
       }
     };
 
-    const interval = setInterval(checkPrayerTimes, 10000);
+    const interval = setInterval(checkPrayerTimes, 30000); // Check every 30 seconds
     return () => clearInterval(interval);
   }, [notificationsEnabled, language]);
 
@@ -1719,7 +1872,6 @@ const AppContent = () => {
               <Route path="/prayer/:id" element={<PrayerDetailPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
               <Route path="/rosary" element={<RosaryPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
               <Route path="/tessera" element={<TesseraPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
-              <Route path="/vexillum" element={<VexillumPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
               <Route path="/calendar" element={<CalendarPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
               <Route path="/about" element={<AboutPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
               <Route path="/settings" element={

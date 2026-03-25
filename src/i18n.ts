@@ -57,7 +57,11 @@ export const t = {
     voicePreview: "Ceci est un aperçu de ma voix pour la lecture des prières.",
     marianMode: "Mode Marial",
     marianModeDesc: "Couleurs et prières dédiées à Marie",
-    marianPrayers: "Prières Mariales"
+    marianPrayers: "Prières Mariales",
+    testNotification: "Tester la notification",
+    notificationTestSent: "Notification de test envoyée !",
+    notificationNotSupported: "Les notifications ne sont pas supportées par ce navigateur.",
+    notificationPermissionDenied: "Permission de notification refusée. Veuillez l'activer dans les paramètres de votre navigateur."
   },
   en: {
     home: "Home",
@@ -115,6 +119,10 @@ export const t = {
     voicePreview: "This is a preview of my voice for reading prayers.",
     marianMode: "Marian Mode",
     marianModeDesc: "Colors and prayers dedicated to Mary",
-    marianPrayers: "Marian Prayers"
+    marianPrayers: "Marian Prayers",
+    testNotification: "Test Notification",
+    notificationTestSent: "Test notification sent!",
+    notificationNotSupported: "Notifications are not supported by this browser.",
+    notificationPermissionDenied: "Notification permission denied. Please enable it in your browser settings."
   }
 };
