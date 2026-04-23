@@ -1519,6 +1519,9 @@ const SettingsPage = ({
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         setNotificationsEnabled(true);
+        if ('vibrate' in navigator) {
+          navigator.vibrate([200, 100, 200]);
+        }
         try {
           new Notification(t[language].angelusTime, {
             body: t[language].notificationTestSent,
@@ -1536,6 +1539,9 @@ const SettingsPage = ({
   };
 
   const sendTestNotification = () => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate([200, 100, 200]);
+    }
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(t[language].angelusTime, {
         body: t[language].notificationTestSent,
@@ -2106,6 +2112,13 @@ const AppContent = () => {
       if ((hours === 6 || hours === 12 || hours === 18) && minutes === 0) {
         if (lastTriggeredHourRef.current !== hours) {
           lastTriggeredHourRef.current = hours;
+          
+          // Vibrate if supported
+          if ('vibrate' in navigator) {
+            // Pattern: 500ms vibration, 200ms pause, 500ms vibration, 200ms pause, 500ms vibration
+            navigator.vibrate([500, 200, 500, 200, 500]);
+          }
+
           if ('Notification' in window && Notification.permission === 'granted') {
             new Notification(t[language].angelusTime, {
               body: t[language].angelusBody,
