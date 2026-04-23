@@ -43,10 +43,13 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
-import { PRAYERS, ROSARY, TESSERA_CONTENT, LITURGICAL_CALENDAR, VEXILLUM_INFO, type Prayer, type LiturgicalEvent } from './data';
+import { PRAYERS, ROSARY, TESSERA_CONTENT, LITURGICAL_CALENDAR, VEXILLUM_INFO, MASS_FLOW, type Prayer, type LiturgicalEvent } from './data';
 import { t, type Language } from './i18n';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { TesseraPage } from './components/TesseraPage';
+import { auth, googleProvider, db, syncUserSettings, removeFavorite, addFavorite, type FirebaseUser } from './firebase';
+import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { collection, query, onSnapshot, doc, getDoc } from 'firebase/firestore';
 
 declare var process: any;
 
@@ -198,7 +201,9 @@ const Drawer = ({ isOpen, onClose, isDarkMode, isMarianMode, language }: { isOpe
   const location = useLocation();
   const menuItems = [
     { icon: Home, label: t[language].home, path: '/', category: 'Principal' },
+    { icon: Heart, label: 'Mes Favoris', path: '/prayers/favoris', category: 'Principal' },
     { icon: Calendar, label: 'Calendrier', path: '/calendar', category: 'Principal' },
+    { icon: Book, label: 'Déroulement Messe', path: '/mass', category: 'Principal' },
     { icon: BookOpen, label: 'Credo', path: '/prayers/credo', category: 'Prières' },
     { icon: Cross, label: t[language].rosary, path: '/rosary', category: 'Prières' },
     { icon: BookOpen, label: 'Tessera', path: '/tessera', category: 'Légion' },
@@ -365,17 +370,63 @@ const GestureHandler = ({ children, onOpenMenu }: { children: ReactNode; onOpenM
 // --- Pages ---
 
 const HomePage = ({ isDarkMode, isMarianMode, language }: { isDarkMode: boolean; isMarianMode: boolean; language: Language }) => {
-  const [thought, setThought] = useState('');
+  const [dailyReading, setDailyReading] = useState('');
+  const [isLoadingReading, setIsLoadingReading] = useState(true);
+  const [heroQuote, setHeroQuote] = useState('');
 
   useEffect(() => {
-    const thoughts = [
-      "Marie est le chemin le plus court pour aller à Jésus.",
-      "La Légion de Marie est une armée en marche sous la bannière de la Vierge.",
-      "Prier le Rosaire, c'est contempler le visage du Christ avec Marie.",
-      "La sainteté consiste à faire la volonté de Dieu avec le sourire.",
-      "Marie ne nous laisse jamais seuls dans nos épreuves."
+    const quotes = [
+      "Prier le Rosaire, c'est contempler le visage du Christ avec Marie",
+      "Marie est le chemin le plus court pour aller à Jésus",
+      "La Légion de Marie est une armée en marche sous la bannière de la Vierge",
+      "La sainteté consiste à faire la volonté de Dieu avec le sourire",
+      "Marie ne nous laisse jamais seuls dans nos épreuves",
+      "Par Marie, tout devient plus facile, plus doux et plus lumineux",
+      "Le Rosaire est la chaîne qui nous lie à Dieu par Marie",
+      "Servir Marie, c'est régner avec Jésus"
     ];
-    setThought(thoughts[Math.floor(Math.random() * thoughts.length)]);
+    setHeroQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+
+    const fetchDailyReading = async () => {
+      const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const cachedReading = localStorage.getItem('dailyReading');
+      const cachedDate = localStorage.getItem('dailyReadingDate');
+
+      if (cachedReading && cachedDate === today) {
+        setDailyReading(cachedReading);
+        setIsLoadingReading(false);
+        return;
+      }
+
+      try {
+        const ai = getAiClient();
+        const prompt = `Trouve les références exactes des lectures bibliques pour la messe du jour catholique (Date : ${today}).
+        Donne : 
+        1. La 1ère Lecture (référence + titre court)
+        2. Le Psaume (référence + antienne)
+        3. L'Évangile (référence + titre court)
+        Format court et élégant pour affichage mobile. Ne donne que le texte des lectures, sans introduction.`;
+
+        const response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: prompt,
+          config: {
+            tools: [{ googleSearch: {} }]
+          }
+        });
+        
+        const result = response.text?.trim() || "Lectures non disponibles.";
+        setDailyReading(result);
+        localStorage.setItem('dailyReading', result);
+        localStorage.setItem('dailyReadingDate', today);
+      } catch (error) {
+        setDailyReading("Lectures non disponibles.");
+      } finally {
+        setIsLoadingReading(false);
+      }
+    };
+
+    fetchDailyReading();
   }, []);
 
   return (
@@ -415,27 +466,20 @@ const HomePage = ({ isDarkMode, isMarianMode, language }: { isDarkMode: boolean;
               </div>
               <p className={cn("text-[9px] font-bold uppercase tracking-[0.4em]", isMarianMode ? "text-blue-200" : "text-amber-400")}>Legio Mariae</p>
             </div>
-            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-serif font-bold text-white leading-tight mb-2 whitespace-nowrap">
+            <h2 className="text-2xl xs:text-3xl sm:text-4xl font-serif font-bold text-white leading-tight mb-4 whitespace-nowrap">
               À Jésus <span className={cn("italic", isMarianMode ? "text-blue-200" : "text-amber-400")}>par Marie</span>
             </h2>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className={cn("w-full border-t pt-2", isMarianMode ? "border-blue-200/30" : "border-amber-400/30")}
-          >
-            <p className="text-blue-50 text-base font-serif italic leading-relaxed opacity-90 px-4">
-              "{thought}"
+            <div className={cn("w-48 h-[1px] mx-auto mb-4", isMarianMode ? "bg-blue-200/50" : "bg-amber-400/50")} />
+            <p className="text-blue-50 text-sm sm:text-lg font-serif italic leading-relaxed opacity-90 px-4 max-w-sm mx-auto">
+              "{heroQuote}"
             </p>
           </motion.div>
           
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="mt-4"
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="mt-6"
           >
             <Link
               to="/prayers/autre"
@@ -481,36 +525,43 @@ const HomePage = ({ isDarkMode, isMarianMode, language }: { isDarkMode: boolean;
           </div>
         </motion.section>
 
-        {/* Founder Quote - Dark Luxury */}
+        {/* Daily Reading Section - Replaces Founder Quote as requested */}
         <motion.section 
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className={cn("text-white p-8 rounded-[2.5rem] relative overflow-hidden group", isMarianMode ? "bg-blue-800" : "bg-[#1a237e]")}
+          className={cn("text-white p-8 rounded-[2.5rem] relative overflow-hidden group", isMarianMode ? "bg-blue-800 shadow-xl shadow-blue-500/20" : "bg-[#1a237e] shadow-xl shadow-blue-900/20")}
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-2xl" />
           
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
               <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", isMarianMode ? "bg-blue-200" : "bg-amber-400")}>
-                <Flag size={14} className={cn(isMarianMode ? "text-blue-800" : "text-[#1a237e]")} />
+                <Book size={14} className={cn(isMarianMode ? "text-blue-800" : "text-[#1a237e]")} />
               </div>
-              <h3 className={cn("text-[10px] font-bold tracking-[0.3em] uppercase", isMarianMode ? "text-blue-200" : "text-amber-400")}>Pensée du jour</h3>
+              <h3 className={cn("text-[10px] font-bold tracking-[0.3em] uppercase", isMarianMode ? "text-blue-200" : "text-amber-400")}>Lecture du jour</h3>
             </div>
-            <p className="text-xl font-serif italic leading-relaxed mb-8 text-blue-50">
-              "Le but de la Légion de Marie est la gloire de Dieu par la sainteté de ses membres, développée par la prière et par une coopération active, sous la direction de la hiérarchie."
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
-                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isMarianMode ? "bg-blue-200" : "bg-amber-400")}>
-                  <span className={cn("font-bold text-[9px]", isMarianMode ? "text-blue-800" : "text-[#1a237e]")}>FD</span>
+            
+            {isLoadingReading ? (
+              <div className="flex flex-col gap-4 py-8 items-center text-center">
+                <Loader2 className="w-8 h-8 animate-spin opacity-50" />
+                <p className="text-sm italic opacity-70">Recherche des lectures de la Messe...</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <p className="text-lg font-serif italic leading-relaxed text-blue-50 whitespace-pre-line border-l-2 border-white/20 pl-6">
+                  {dailyReading}
+                </p>
+                <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                  <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", isMarianMode ? "bg-blue-200" : "bg-amber-400")}>
+                    <Calendar size={14} className={cn(isMarianMode ? "text-blue-800" : "text-[#1a237e]")} />
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-widest opacity-80">
+                    {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </span>
                 </div>
               </div>
-              <div className="flex flex-col">
-                <span className={cn("font-bold text-[8px] uppercase tracking-[0.2em]", isMarianMode ? "text-blue-200" : "text-amber-400")}>Fondateur</span>
-                <span className="text-white font-bold text-base">Frank Duff</span>
-              </div>
-            </div>
+            )}
           </div>
         </motion.section>
 
@@ -566,16 +617,32 @@ const HomePage = ({ isDarkMode, isMarianMode, language }: { isDarkMode: boolean;
   );
 };
 
-const PrayersListPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarianMode: boolean }) => {
+const PrayersListPage = ({ isDarkMode, isMarianMode, user }: { isDarkMode: boolean; isMarianMode: boolean; user: FirebaseUser | null }) => {
   const { category } = useParams<{ category: string }>();
   const [searchQuery, setSearchQuery] = useState('');
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      const q = query(collection(db, 'users', user.uid, 'favorites'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setFavoriteIds(snapshot.docs.map(doc => doc.id));
+      });
+      return () => unsubscribe();
+    } else {
+      setFavoriteIds(JSON.parse(localStorage.getItem('favorites') || '[]'));
+    }
+  }, [user]);
   
-  const allPrayersInCategory = PRAYERS.filter(p => p.category === category || category === 'all');
+  const allPrayersInCategory = category === 'favoris'
+    ? PRAYERS.filter(p => favoriteIds.includes(p.id))
+    : PRAYERS.filter(p => p.category === category || category === 'all');
+
   const prayers = allPrayersInCategory.filter(p => 
     p.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  const title = category === 'credo' ? 'Le Credo' : category === 'legion' ? 'La Tessera' : 'Autres Prières';
+  const title = category === 'credo' ? 'Le Credo' : category === 'legion' ? 'La Tessera' : category === 'favoris' ? 'Mes Favoris' : 'Autres Prières';
   
   // Grouping logic for 'autre' category
   const legionPrayers = prayers.filter(p => p.id.includes('legion') || p.id === 'magnificat');
@@ -791,7 +858,7 @@ const PrayersListPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; is
   );
 };
 
-const PrayerDetailPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarianMode: boolean }) => {
+const PrayerDetailPage = ({ isDarkMode, isMarianMode, user }: { isDarkMode: boolean; isMarianMode: boolean; user: FirebaseUser | null }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const prayer = PRAYERS.find(p => p.id === id);
@@ -803,10 +870,41 @@ const PrayerDetailPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; i
 
   useEffect(() => {
     if (id) {
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      setIsFavorite(favorites.includes(id));
+      if (user) {
+        // Subscribe to favorites from Firestore
+        const favoriteRef = doc(db, 'users', user.uid, 'favorites', id);
+        const unsubscribe = onSnapshot(favoriteRef, (docSnap) => {
+          setIsFavorite(docSnap.exists());
+        });
+        return () => unsubscribe();
+      } else {
+        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        setIsFavorite(favorites.includes(id));
+      }
     }
-  }, [id]);
+  }, [id, user]);
+
+  const toggleFavorite = async () => {
+    if (!id) return;
+    
+    if (user) {
+      if (isFavorite) {
+        await removeFavorite(user.uid, id);
+      } else {
+        await addFavorite(user.uid, id);
+      }
+    } else {
+      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+      let newFavorites;
+      if (isFavorite) {
+        newFavorites = favorites.filter((f: string) => f !== id);
+      } else {
+        newFavorites = [...favorites, id];
+      }
+      localStorage.setItem('favorites', JSON.stringify(newFavorites));
+      setIsFavorite(!isFavorite);
+    }
+  };
 
   const generateAudio = async () => {
     if (!prayer || isGenerating) return;
@@ -849,19 +947,6 @@ const PrayerDetailPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; i
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const toggleFavorite = () => {
-    if (!id) return;
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    let newFavorites;
-    if (isFavorite) {
-      newFavorites = favorites.filter((f: string) => f !== id);
-    } else {
-      newFavorites = [...favorites, id];
-    }
-    localStorage.setItem('favorites', JSON.stringify(newFavorites));
-    setIsFavorite(!isFavorite);
   };
 
   if (!prayer) return <div className="p-10 text-center font-sans italic text-gray-400">Prière non trouvée</div>;
@@ -1282,6 +1367,115 @@ const RosaryPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMaria
 
 
 
+const MassFlowPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean; isMarianMode: boolean }) => {
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={cn("p-6 pb-20 space-y-8", isDarkMode ? "bg-gray-900" : (isMarianMode ? "bg-[#f0f4f8]" : "bg-[#fdfcf8]"))}
+    >
+      <div className="text-center mb-10">
+        <h2 className={cn("text-3xl font-serif italic font-bold mb-2", isDarkMode ? "text-white" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]"))}>Déroulement de la Messe</h2>
+        <div className={cn("w-20 h-1 mx-auto rounded-full", isMarianMode ? "bg-blue-400" : "bg-amber-400")} />
+      </div>
+
+      <div className="space-y-10">
+        {MASS_FLOW.map((section, idx) => (
+          <div key={section.title} className="space-y-4">
+            <h3 className={cn("text-xs font-black uppercase tracking-[0.2em] mb-4 opacity-60 px-2", isMarianMode ? "text-blue-700" : "text-amber-700")}>
+              {section.title}
+            </h3>
+            <div className="space-y-3">
+              {section.parts.map((part, pIdx) => {
+                const id = `${idx}-${pIdx}`;
+                const isExpanded = expandedSection === id;
+                
+                return (
+                  <motion.div
+                    key={part.title}
+                    layout
+                    className={cn(
+                      "rounded-[2rem] border transition-all overflow-hidden",
+                      isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100 shadow-sm"
+                    )}
+                  >
+                    <button
+                      onClick={() => setExpandedSection(isExpanded ? null : id)}
+                      className="w-full p-6 flex items-center justify-between gap-4 text-left"
+                    >
+                      <span className={cn("font-bold text-lg leading-tight", isDarkMode ? "text-gray-200" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]"))}>
+                        {part.title}
+                      </span>
+                      <ChevronRight 
+                        size={20} 
+                        className={cn("transition-transform duration-300", isExpanded ? "rotate-90" : "", isDarkMode ? "text-gray-500" : "text-gray-300")} 
+                      />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                        >
+                          <div className={cn("px-6 pb-8 space-y-6", isDarkMode ? "text-gray-300" : "text-gray-700")}>
+                            {part.details && (
+                              <p className="text-sm italic opacity-80 border-l-2 pl-4 py-1 leading-relaxed border-amber-300/30">
+                                {part.details}
+                              </p>
+                            )}
+                            
+                            {part.dialogue && (
+                              <div className="space-y-4">
+                                {part.dialogue.map((line, lIdx) => (
+                                  <div key={lIdx} className={cn(
+                                    "flex flex-col gap-1",
+                                    line.isResponse ? "pl-4" : ""
+                                  )}>
+                                    <span className={cn(
+                                      "text-[10px] font-black uppercase tracking-widest",
+                                      line.isResponse 
+                                        ? (isMarianMode ? "text-blue-500" : "text-amber-600") 
+                                        : (isDarkMode ? "text-gray-400" : "text-gray-500")
+                                    )}>
+                                      {line.speaker} :
+                                    </span>
+                                    <p className={cn(
+                                      "text-base leading-relaxed whitespace-pre-line",
+                                      line.isResponse ? "font-bold italic" : ""
+                                    )}>
+                                      {line.text}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {part.content && (
+                              <p className="text-base leading-relaxed whitespace-pre-line font-serif italic text-center p-6 bg-gray-500/5 rounded-3xl">
+                                {part.content}
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+
 const SettingsPage = ({ 
   isDarkMode, 
   setIsDarkMode, 
@@ -1292,7 +1486,8 @@ const SettingsPage = ({
   language,
   setLanguage,
   isMarianMode,
-  setIsMarianMode
+  setIsMarianMode,
+  user
 }: { 
   isDarkMode: boolean; 
   setIsDarkMode: (v: boolean) => void;
@@ -1304,6 +1499,7 @@ const SettingsPage = ({
   setLanguage: (v: Language) => void;
   isMarianMode: boolean;
   setIsMarianMode: (v: boolean) => void;
+  user: FirebaseUser | null;
 }) => {
   const voices = ['Kore', 'Puck', 'Charon', 'Fenrir', 'Zephyr'];
   const [isPreviewing, setIsPreviewing] = useState<string | null>(null);
@@ -1400,6 +1596,49 @@ const SettingsPage = ({
         <p className={cn("text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-60", isDarkMode ? (isMarianMode ? "text-blue-400" : "text-amber-400") : (isMarianMode ? "text-blue-700" : "text-amber-700"))}>{t[language].preferences}</p>
         <h2 className={cn("text-4xl font-serif italic font-bold tracking-tight", isDarkMode ? "text-white" : (isMarianMode ? "text-blue-900" : "text-[#1a237e]"))}>{t[language].settings}</h2>
       </div>
+
+      {/* Auth Section */}
+      <section className="space-y-4">
+        <h3 className={cn("px-2 text-sm font-black uppercase tracking-widest", isDarkMode ? "text-gray-400" : (isMarianMode ? "text-blue-800" : "text-gray-500"))}>Compte</h3>
+        <div className={cn("rounded-[2.5rem] shadow-sm border overflow-hidden p-6", isDarkMode ? (isMarianMode ? "bg-blue-900/20 border-blue-800" : "bg-gray-800 border-gray-700") : (isMarianMode ? "bg-white border-blue-50" : "bg-white border-amber-50"))}>
+          {user ? (
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500 shadow-lg">
+                  <img src={user.photoURL || ""} alt={user.displayName || ""} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                </div>
+                <div>
+                  <p className={cn("font-bold", isDarkMode ? "text-white" : "text-blue-900")}>{user.displayName}</p>
+                  <p className="text-[10px] text-gray-500 font-medium tracking-wider">{user.email}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => signOut(auth)}
+                className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition-all"
+              >
+                Déconnexion
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2">
+                <User size={32} />
+              </div>
+              <div>
+                <p className={cn("font-bold text-lg", isDarkMode ? "text-white" : "text-blue-900")}>Synchronisez vos données</p>
+                <p className="text-xs text-gray-500 px-4">Connectez-vous pour retrouver vos favoris et vos réglages sur tous vos appareils.</p>
+              </div>
+              <button 
+                onClick={() => signInWithPopup(auth, googleProvider)}
+                className="w-full py-4 mt-2 rounded-[1.5rem] bg-blue-600 text-white font-bold flex items-center justify-center gap-3 shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
+              >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+                Se connecter avec Google
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Appearance Section */}
       <section className="space-y-4">
@@ -1769,6 +2008,9 @@ const CalendarPage = ({ isDarkMode, isMarianMode }: { isDarkMode: boolean, isMar
 
 const AppContent = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [isFirebaseReady, setIsFirebaseReady] = useState(false);
+
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
@@ -1792,6 +2034,49 @@ const AppContent = () => {
   const [language, setLanguage] = useState<Language>(() => {
     return (localStorage.getItem('language') as Language) || 'fr';
   });
+
+  // Auth & Sync Logic
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // Load initial settings from Firestore if they exist
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setIsDarkMode(data.isDarkMode);
+          setIsMarianMode(data.isMarianMode);
+          setNotificationsEnabled(data.notificationsEnabled);
+          setSelectedVoice(data.selectedVoice);
+          setLanguage(data.language);
+        } else {
+          // Sync current local settings to firestore on first login
+          syncUserSettings(currentUser.uid, {
+            isDarkMode,
+            isMarianMode,
+            notificationsEnabled,
+            selectedVoice,
+            language
+          });
+        }
+      }
+      setIsFirebaseReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Sync settings to Firestore whenever they change and user is logged in
+  useEffect(() => {
+    if (user && isFirebaseReady) {
+      syncUserSettings(user.uid, {
+        isDarkMode,
+        isMarianMode,
+        notificationsEnabled,
+        selectedVoice,
+        language
+      });
+    }
+  }, [isDarkMode, isMarianMode, notificationsEnabled, selectedVoice, language, user, isFirebaseReady]);
 
   useEffect(() => {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
@@ -1868,8 +2153,9 @@ const AppContent = () => {
             <motion.div key={location.pathname} className="w-full">
               <Routes location={location}>
               <Route path="/" element={<HomePage isDarkMode={isDarkMode} isMarianMode={isMarianMode} language={language} />} />
-              <Route path="/prayers/:category" element={<PrayersListPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
-              <Route path="/prayer/:id" element={<PrayerDetailPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
+              <Route path="/prayers/:category" element={<PrayersListPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} user={user} />} />
+              <Route path="/prayer/:id" element={<PrayerDetailPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} user={user} />} />
+              <Route path="/mass" element={<MassFlowPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
               <Route path="/rosary" element={<RosaryPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
               <Route path="/tessera" element={<TesseraPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
               <Route path="/calendar" element={<CalendarPage isDarkMode={isDarkMode} isMarianMode={isMarianMode} />} />
@@ -1886,6 +2172,7 @@ const AppContent = () => {
                   setSelectedVoice={setSelectedVoice}
                   language={language}
                   setLanguage={setLanguage}
+                  user={user}
                 />
               } />
             </Routes>

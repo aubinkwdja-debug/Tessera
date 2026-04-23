@@ -414,3 +414,193 @@ export const VEXILLUM_INFO = {
   ],
   detailedDescription: "Le Vexillum exprime l'idée que le monde doit être conquis par le Saint-Esprit agissant par Marie et ses enfants. Il est utilisé lors des réunions et des cérémonies officielles comme l'Acies. Il rappelle aux légionnaires leur devoir de loyauté et de service sous l'étendard de leur Reine."
 };
+
+export interface MassPart {
+  title: string;
+  details?: string;
+  content?: string;
+  dialogue?: {
+    speaker: string;
+    text: string;
+    isResponse?: boolean;
+  }[];
+}
+
+export interface MassSection {
+  title: string;
+  parts: MassPart[];
+}
+
+export const MASS_FLOW: MassSection[] = [
+  {
+    title: "LA LITURGIE DE L'ACCUEIL",
+    parts: [
+      {
+        title: "LA SALUTATION ET MOT D'ACCUEIL DU PRÊTRE",
+        details: "Faire le signe de la croix : ce geste, avec les paroles qui l’accompagnent, sont le signe de notre foi en Dieu Trinité et en Jésus mort sur la croix pour nous. Le signe de la croix exprime bien que les chrétiens sont rassemblés au nom de Dieu.",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Au nom du Père, du Fils et du Saint-Esprit." },
+          { speaker: "ASSEMBLEE", text: "Amen.", isResponse: true },
+          { speaker: "PRÊTRE", text: "Le Seigneur soit avec vous –" },
+          { speaker: "ASSEMBLEE", text: "Et avec votre esprit.", isResponse: true }
+        ]
+      },
+      {
+        title: "LA PRÉPARATION PÉNITENTIELLE",
+        details: "PRÊTRE : Préparons-nous à la célébration de l’Eucharistie en reconnaissant que nous sommes pécheurs.",
+        content: "Je confesse à Dieu tout-puissant, je reconnais devant mes frères que j’ai péché en pensée, en parole, par action et par omission, oui j’ai vraiment péché, c’est pourquoi je supplie la Vierge Marie, les anges et tous les saints, de prier pour moi le Seigneur notre Dieu.\n\nPRÊTRE : Que Dieu tout-puissant nous fasse miséricorde, qu’il nous pardonne nos péchés et nous conduise à la vie éternelle. Amen"
+      },
+      {
+        title: "LE KYRIE",
+        details: "Nous proclamons le Christ Seigneur, c’est-à-dire Ressuscité.",
+        content: "Français : Seigneur, prends pitié. Ô Christ, prends pitié. Seigneur, prends pitié.\n\nGrec : Kyrie, eleison. Christe, eleison. Kyrie, eleison"
+      },
+      {
+        title: "LE GLORIA",
+        details: "Chant des anges dans la Bible. Nous remercions Dieu pour ce qu’il nous donne. Cette hymne n’est pas chantée pendant le temps de l’Avent ni pendant le temps du Carême.",
+        content: "Gloire à Dieu, au plus haut des cieux, et paix sur la terre aux hommes qu’il aime. Nous te louons, nous te bénissons, nous t’adorons, nous te glorifions, nous te rendons grâce, pour ton immense gloire, Seigneur Dieu, Roi du ciel, Dieu le Père tout-puissant.\n\nSeigneur, Fils unique, Jésus Christ, Seigneur Dieu, Agneau de Dieu, le Fils du Père. Toi qui enlèves le péché du monde, prends pitié de nous. Toi qui enlèves le péché du monde, reçois notre prière. Toi qui es assis à la droite du Père, prends pitié de nous.\n\nCar toi seul es saint, Toi seul es Seigneur, Toi seul es le Très-Haut, Jésus-Christ, avec le Saint-Esprit, dans la gloire de Dieu le Père. Amen"
+      },
+      {
+        title: "LA PRIÈRE D’OUVERTURE (COLLECTE)",
+        details: "Le prêtre dit à voix haute une prière au nom de tous. On l’appelle aussi « oraison » ou « collecte ». Ce qui vient d’un mot latin qui signifie « prière ». Les chrétiens répondent « Amen » à cette prière. C’est un mot hébreu qui signifie « c’est vrai, d’accord ».",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Prions le Seigneur.\n(Bref temps de silence, suivi d’une prière qui rassemble les intentions de toute l’Église)" },
+          { speaker: "ASSEMBLEE", text: "Amen.", isResponse: true }
+        ]
+      }
+    ]
+  },
+  {
+    title: "LA LITURGIE DE LA PAROLE",
+    parts: [
+      {
+        title: "LA PREMIÈRE LECTURE",
+        dialogue: [
+          { speaker: "LECTEUR", text: "Parole du Seigneur" },
+          { speaker: "ASSEMBLEE", text: "Nous rendons grâce à Dieu.", isResponse: true }
+        ]
+      },
+      {
+        title: "LE PSAUME",
+        details: "Chant tiré de la Bible, recueil des sentiments que le Christ partage avec nous."
+      },
+      {
+        title: "LA DEUXIÈME LECTURE",
+        dialogue: [
+          { speaker: "LECTEUR", text: "Parole du Seigneur" },
+          { speaker: "ASSEMBLEE", text: "Nous rendons grâce à Dieu.", isResponse: true }
+        ]
+      },
+      {
+        title: "L’ÉVANGILE",
+        details: "Alléluia, en hébreu cela signifie « louez Dieu ». Nous nous mettons debout. Faire le signe de Croix avec le pouce sur le front, la bouche et le cœur, signe que la Parole de Dieu entre dans notre esprit et notre cœur et que notre bouche est prête à l’annoncer.",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Le Seigneur soit avec vous" },
+          { speaker: "ASSEMBLEE", text: "Et avec votre esprit.", isResponse: true },
+          { speaker: "PRÊTRE", text: "Évangile de Jésus Christ selon Saint …" },
+          { speaker: "ASSEMBLEE", text: "Gloire à toi, Seigneur.", isResponse: true },
+          { speaker: "PRÊTRE", text: "Acclamons la parole de Dieu" },
+          { speaker: "ASSEMBLEE", text: "Louange à Toi Seigneur Jésus.", isResponse: true }
+        ]
+      },
+      {
+        title: "L’HOMÉLIE",
+        details: "Le prêtre explique l’Évangile pour nous aider à vivre notre foi au quotidien."
+      },
+      {
+        title: "LE CREDO",
+        details: "Texte qui remonte aux premiers siècles de l’Église. Il résume la foi chrétienne.",
+        content: "Symbole des Apôtres :\nJe crois en Dieu, le Père tout-puissant, créateur du ciel et de la terre, et en Jésus Christ, son Fils unique, notre Seigneur ; qui a été conçu du Saint Esprit, est né de la Vierge Marie, a souffert sous Ponce Pilate, a été crucifié, est mort et a été enseveli, est descendu aux enfers ; le troisième jour est ressuscité des morts, est monté aux cieux, est assis à la droite de Dieu le Père tout-puissant, d’où il viendra juger les vivants et les morts. Je crois en l’Esprit Saint, à la sainte Église catholique, à la communion des saints, à la rémission des péchés, à la résurrection de la chair, à la vie éternelle. Amen\n\nOU Symbole de Nicée-Constantinople :\nJe crois en un seul Dieu, le Père tout puissant, créateur du ciel et de la terre, de l’univers visible et invisible. Je crois en un seul Seigneur, Jésus Christ, le Fils unique de Dieu, né du Père avant tous les siècles : Il est Dieu, né de Dieu, lumière, née de la lumière, vrai Dieu, né du vrai Dieu. Engendré non pas créé, de même nature que le Père ; et par lui tout a été fait. Pour nous les hommes, et pour notre salut, il descendit du ciel. Par l’Esprit Saint, il a pris chair de la Vierge Marie, et s’est fait homme. Crucifié pour nous sous Ponce Pilate, Il souffrit sa passion et fut mis au tombeau. Il ressuscita le troisième jour, conformément aux Ecritures, et il monta au ciel ; il est assis à la droite du Père. Il reviendra dans la gloire, pour juger les vivants et les morts et son règne n’aura pas de fin. Je crois en l’Esprit Saint, qui est Seigneur et qui donne la vie ; il procède du Père et du Fils. Avec le Père et le Fils, il reçoit même adoration et même gloire ; il a parlé par les prophètes. Je crois en l’Église, une, sainte, catholique et apostolique. Je reconnais un seul baptême pour le pardon des péchés. J’attends la résurrection des morts, et la vie du monde à venir. Amen"
+      },
+      {
+        title: "LA PRIÈRE UNIVERSELLE",
+        details: "Nous confions à Dieu les intentions de l’Église et du monde."
+      }
+    ]
+  },
+  {
+    title: "LA LITURGIE EUCHARISTIQUE",
+    parts: [
+      {
+        title: "L’OFFERTOIRE",
+        details: "Le prêtre offre à Dieu le pain et le vin, symboles de la création donnée par Dieu et travaillée par l’homme. C’est le moment de confier toute notre vie au Seigneur, et aussi les intentions que nous portons."
+      },
+      {
+        title: "LA PRIÈRE EUCHARISTIQUE",
+        details: "Cette prière constitue le cœur de la messe. Le prêtre récite cette prière au nom de toute l’Église et invoque l’Esprit-Saint sur le pain et le vin qui vont devenir le Corps et le Sang du Christ.",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Le Seigneur soit avec vous" },
+          { speaker: "ASSEMBLEE", text: "Et avec votre esprit.", isResponse: true },
+          { speaker: "PRÊTRE", text: "Élevons notre cœur" },
+          { speaker: "ASSEMBLEE", text: "Nous le tournons vers le Seigneur.", isResponse: true },
+          { speaker: "PRÊTRE", text: "Rendons grâce au Seigneur notre Dieu" },
+          { speaker: "ASSEMBLEE", text: "Cela est juste et bon.", isResponse: true }
+        ]
+      },
+      {
+        title: "LE SANCTUS",
+        content: "Français : Saint ! Saint ! Saint, le Seigneur, Dieu de l'univers ! Le ciel et la terre sont remplis de ta gloire. Hosanna au plus haut des cieux ! Béni soit celui qui vient au nom du Seigneur. Hosanna au plus haut des cieux !\n\nLatin : Sanctus, sanctus, Dominus Deus Sabaoth. Pleni sunt coeli et terra Gloria tua. Hosanna in excelsis ! Benedictus qui venit in nomine Domini. Hosanna in excelsis !"
+      },
+      {
+        title: "Consécration et Doxologie",
+        details: "Au centre de la prière eucharistique, le prêtre reprend les paroles de Jésus le soir de la Cène.",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Par Lui, avec Lui et en Lui, à Toi, Dieu le Père Tout-Puissant, dans l'unité du Saint Esprit, tout honneur et toute gloire, pour les siècles des siècles." },
+          { speaker: "ASSEMBLEE", text: "Amen.", isResponse: true }
+        ]
+      },
+      {
+        title: "LE NOTRE PÈRE",
+        content: "Notre Père, qui es aux cieux, que ton nom soit sanctifié, que ton règne vienne, que ta volonté soit faite sur la terre comme au ciel. Donne-nous aujourd’hui notre pain de ce jour. Pardonne-nous nos offenses, comme nous pardonnons aussi à ceux qui nous ont offensés. Et ne nous laisse pas entrer en tentation mais délivre-nous du Mal. Amen"
+      },
+      {
+        title: "Rite de la paix",
+        details: "Avant de recevoir la communion, nous manifestons l’unité de l’Église que le Christ nous donne lui-même en échangeant un geste de paix.",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Que la paix du Seigneur soit toujours avec vous" },
+          { speaker: "ASSEMBLEE", text: "Et avec votre esprit.", isResponse: true },
+          { speaker: "PRÊTRE", text: "(Dans la charité du Christ, donnez-vous la paix)" }
+        ]
+      },
+      {
+        title: "L’AGNEAU DE DIEU",
+        content: "Français : Agneau de Dieu, qui enlèves le péché du monde, prends pitié de nous (bis), Agneau de Dieu, qui enlèves le péché du monde, donne-nous la paix.\n\nLatin : Agnus Dei, qui tollis peccata mundi, miserere nobis (bis). Agnus Dei, qui tollis peccáta mundi, dona nobis pacem.",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Heureux les invités au repas du Seigneur ! Voici l'Agneau de Dieu qui enlève le péché du monde." },
+          { speaker: "ASSEMBLEE", text: "Seigneur, je ne suis pas digne de te recevoir ; mais dis seulement une parole et je serai guéri.", isResponse: true }
+        ]
+      },
+      {
+        title: "LA COMMUNION",
+        details: "Le chrétien communie en recevant l’hostie consacrée, le Corps du Christ. Après la Communion, nous restons dans le silence intérieur du Christ qui vit en nous."
+      }
+    ]
+  },
+  {
+    title: "LA LITURGIE DE L’ENVOI",
+    parts: [
+      {
+        title: "LA PRIÈRE APRÈS LA COMMUNION",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Prions le Seigneur." },
+          { speaker: "ASSEMBLEE", text: "Amen.", isResponse: true }
+        ]
+      },
+      {
+        title: "LA BÉNÉDICTION FINALE",
+        details: "Le Prêtre nous bénit et nous envoie témoigner de l’Amour du Christ dans notre vie.",
+        dialogue: [
+          { speaker: "PRÊTRE", text: "Le Seigneur soit avec vous" },
+          { speaker: "ASSEMBLEE", text: "Et avec votre esprit.", isResponse: true },
+          { speaker: "PRÊTRE", text: "Et que Dieu tout-puissant vous bénisse, le Père, le Fils et le Saint-Esprit" },
+          { speaker: "ASSEMBLEE", text: "Amen.", isResponse: true },
+          { speaker: "PRÊTRE (ou diacre)", text: "Allez, dans la paix du Christ" },
+          { speaker: "ASSEMBLEE", text: "Nous rendons grâce à Dieu.", isResponse: true }
+        ]
+      },
+      {
+        title: "CHANT DE SORTIE"
+      }
+    ]
+  }
+];

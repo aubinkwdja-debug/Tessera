@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 0.1 Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['isDarkMode', 'isMarianMode', 'notificationsEnabled', 'selectedVoice', 'language', 'updatedAt'])
+        && data.keys().size() == 6
+        && data.isDarkMode is bool
+        && data.isMarianMode is bool
+        && data.notificationsEnabled is bool
+        && data.selectedVoice is string && data.selectedVoice.size() <= 50
+        && data.language in ['fr', 'en']
+        && data.updatedAt == request.time;
+    }
+
+    function isValidFavorite(data) {
+      return data.keys().hasAll(['prayerId', 'addedAt'])
+        && data.keys().size() == 2
+        && data.prayerId is string && data.prayerId.size() <= 100
+        && data.addedAt == request.time;
+    }
+
+    // --- Rules ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) 
+        && isValidUser(incoming())
+        && (
+           incoming().diff(existing()).affectedKeys().hasAll(['updatedAt']) &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['isDarkMode', 'isMarianMode', 'notificationsEnabled', 'selectedVoice', 'language', 'updatedAt'])
+        );
+      allow delete: if false;
+
+      match /favorites/{favoriteId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(favoriteId);
+        allow create: if isOwner(userId) && isValidId(favoriteId) && isValidFavorite(incoming());
+        allow update: if false; 
+        allow delete: if isOwner(userId) && isValidId(favoriteId);
+      }
+    }
+  }
+}

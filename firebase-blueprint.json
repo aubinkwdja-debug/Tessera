@@ -1,0 +1,37 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Represents a user and their settings.",
+      "type": "object",
+      "properties": {
+        "isDarkMode": { "type": "boolean" },
+        "isMarianMode": { "type": "boolean" },
+        "notificationsEnabled": { "type": "boolean" },
+        "selectedVoice": { "type": "string" },
+        "language": { "type": "string", "enum": ["fr", "en"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Favorite": {
+      "title": "Favorite Prayer",
+      "description": "A prayer favorited by the user.",
+      "type": "object",
+      "properties": {
+        "prayerId": { "type": "string" },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["prayerId", "addedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile and global settings"
+    },
+    "/users/{userId}/favorites/{favoriteId}": {
+      "schema": "Favorite",
+      "description": "Sub-collection for favorited prayers"
+    }
+  }
+}
