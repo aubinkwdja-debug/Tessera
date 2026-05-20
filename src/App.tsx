@@ -636,7 +636,7 @@ const PrayersListPage = ({ isDarkMode, isMarianMode, user }: { isDarkMode: boole
   
   const allPrayersInCategory = category === 'favoris'
     ? PRAYERS.filter(p => favoriteIds.includes(p.id))
-    : PRAYERS.filter(p => p.category === category || category === 'all');
+    : PRAYERS.filter(p => p.category === category || category === 'all' || (category === 'autre' && ['notre-pere', 'je-vous-salue-marie'].includes(p.id)));
 
   const prayers = allPrayersInCategory.filter(p => 
     p.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -653,7 +653,7 @@ const PrayersListPage = ({ isDarkMode, isMarianMode, user }: { isDarkMode: boole
   const allMarianPrayers = PRAYERS.filter(p => ['je-vous-salue-marie', 'salve-regina', 'souvenez-vous', 'magnificat', 'angelus'].includes(p.id));
   const marianPrayers = allMarianPrayers.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
   
-  const otherPrayers = prayers.filter(p => !p.id.includes('legion') && p.id !== 'magnificat' && !p.id.startsWith('evangile-') && p.id !== 'priere-paix-ci' && p.id !== 'nd-paix-yamoussoukro' && !allMarianPrayers.some(mp => mp.id === p.id));
+  const otherPrayers = prayers.filter(p => !p.id.includes('legion') && p.id !== 'magnificat' && !p.id.startsWith('evangile-') && p.id !== 'priere-paix-ci' && p.id !== 'nd-paix-yamoussoukro' && (!isMarianMode || !allMarianPrayers.some(mp => mp.id === p.id)));
 
   return (
     <motion.div 
